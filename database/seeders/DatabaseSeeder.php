@@ -2,26 +2,94 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Country;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
+    const CITY_STATES = [
+        ['name' => 'Sapporo', 'state' => 'Hokkaido'],
+        ['name' => 'Sendai', 'state' => 'Miyagi'],
+        ['name' => 'Nagaoka', 'state' => 'Niigata'],
+        ['name' => 'Ota', 'state' => 'Tokyo'],
+        ['name' => 'Nagoya', 'state' => 'Aichi'],
+        ['name' => 'Suita', 'state' => 'Osaka'],
+        ['name' => 'Takamatsu', 'state' => 'Kagawa'],
+        ['name' => 'Nishi-ku', 'state' => 'Hiroshima'],
+        ['name' => 'Hakata-ku', 'state' => 'Fukuoka'],
+        ['name' => 'Suminoe-ku', 'state' => 'Osaka'],
+        ['name' => 'Bunkyo', 'state' => 'Tokyo'],
+        ['name' => 'Naka-ku', 'state' => 'Yokohama'],
+        ['name' => 'Takasaki', 'state' => 'Gunma'],
+        ['name' => 'Hamamatsu', 'state' => 'Shizuoka'],
+        ['name' => 'Koto', 'state' => 'Tokyo'],
+//        ['name' => '', 'state' => ''],
+    ];
+
+    const WRESTLING_VENUES = [
+        ['name' => 'Hokkai Kitayell', 'city' => 'Sapporo'],
+        ['name' => 'Sendai Sun Plaza Hall', 'city' => 'Sendai'],
+        ['name' => 'City Hall Plaza Aore Nagaoka', 'city' => 'Nagaoka'],
+        ['name' => 'Ota City General Gymnasium', 'city' => 'Ota'],
+        ['name' => 'Port Messe Nagoya', 'city' => 'Nagoya'],
+        ['name' => 'Yamato Arena', 'city' => 'Suita'],
+        ['name' => 'Sun Messe Kagawa', 'city' => 'Takamatsu'],
+        ['name' => 'Hiroshima Sun Plaza', 'city' => 'Nishi-ku'],
+        ['name' => 'Fukuoka Convention Center', 'city' => 'Hakata-ku'],
+        ['name' => 'Intex Osaka', 'city' => 'Suminoe-ku'],
+        ['name' => 'Korakuen Hall', 'city' => 'Bunkyo'],
+        ['name' => 'Yokohama Budokan', 'city' => 'Naka-ku'],
+        ['name' => 'G Messe Gunma', 'city' => 'Takasaki'],
+        ['name' => 'Act City Hamamatsu', 'city' => 'Hamamatsu'],
+        ['name' => 'Ariake Arena', 'city' => 'Koto'],
+    ];
+
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->countries();
+        $this->statesAndCities();
+        $this->wrestlingVenues();
+    }
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => 'password',
-                'email_verified_at' => now(),
-            ]
+    protected function countries()
+    {
+        Country::updateOrCreate(
+            ['name' => 'Japan'],
         );
+    }
+
+    protected function statesAndCities()
+    {
+        $japan = Country::where('name', 'Japan')->first();
+
+        collect(self::CITY_STATES)->each(function ($city) use (&$japan) {
+            $state = $japan->states()->updateOrCreate([
+                'name' => $city['state'],
+            ]);
+
+            $japan->cities()->updateOrCreate(
+                [
+                    'name' => $city['name'],
+                    'state_id' => $state->id,
+                ],
+                [
+                    'timezone' => 'Asia/Tokyo',
+                ],
+            );
+        });
+    }
+
+    protected function wrestlingVenues()
+    {
+        $japan = Country::where('name', 'Japan')->first();
+
+        collect(self::WRESTLING_VENUES)->each(function ($venue) use (&$japan) {
+            $city = $japan->cities()->where('name', $venue['city'])->first();
+
+            $city->venues()->updateOrCreate([
+                'type' => 'wrestling',
+                'name' => $venue['name'],
+            ]);
+        });
     }
 }
