@@ -72,7 +72,7 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();
@@ -87,6 +87,7 @@ return new class extends Migration
         Schema::create('days', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(ProjectVersion::class);
+            $table->date('date');
             $table->unsignedTinyInteger('number');
             $table->timestamps();
         });
@@ -96,6 +97,7 @@ return new class extends Migration
             $table->foreignIdFor(Day::class);
             $table->foreignIdFor(City::class, 'start_city_id');
             $table->foreignIdFor(City::class, 'end_city_id');
+            $table->boolean('overnight')->default(false);
             $table->timestamps();
         });
 

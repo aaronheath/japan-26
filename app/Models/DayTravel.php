@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DayTravel extends Model
 {
+    protected $table = 'day_travels';
+
     /** @use HasFactory<\Database\Factories\DayTravelFactory> */
     use HasFactory;
 }

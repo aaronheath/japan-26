@@ -7,7 +7,18 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    const CITY_STATES = [
+    const AUSTRALIA_CITY_STATES = [
+        ['name' => 'Sydney', 'state' => 'New South Wales', 'timezone' => 'Australia/Sydney'],
+        ['name' => 'Melbourne', 'state' => 'Victoria', 'timezone' => 'Australia/Sydney'],
+        ['name' => 'Brisbane', 'state' => 'Queensland', 'timezone' => 'Australia/Brisbane'],
+        ['name' => 'Perth', 'state' => 'Western Australia', 'timezone' => 'Australia/Perth'],
+        ['name' => 'Adelaide', 'state' => 'South Australia', 'timezone' => 'Australia/Adelaide'],
+        ['name' => 'Hobart', 'state' => 'Tasmania', 'timezone' => 'Australia/Sydney'],
+        ['name' => 'Canberra', 'state' => 'Australian Capital Territory', 'timezone' => 'Australia/Sydney'],
+        ['name' => 'Darwin', 'state' => 'Northern Territory', 'timezone' => 'Australia/Darwin'],
+    ];
+
+    const JAPAN_CITY_STATES = [
         ['name' => 'Sapporo', 'state' => 'Hokkaido'],
         ['name' => 'Sendai', 'state' => 'Miyagi'],
         ['name' => 'Nagaoka', 'state' => 'Niigata'],
@@ -26,7 +37,7 @@ class DatabaseSeeder extends Seeder
 //        ['name' => '', 'state' => ''],
     ];
 
-    const WRESTLING_VENUES = [
+    const JAPAN_WRESTLING_VENUES = [
         ['name' => 'Hokkai Kitayell', 'city' => 'Sapporo'],
         ['name' => 'Sendai Sun Plaza Hall', 'city' => 'Sendai'],
         ['name' => 'City Hall Plaza Aore Nagaoka', 'city' => 'Nagaoka'],
@@ -49,10 +60,15 @@ class DatabaseSeeder extends Seeder
         $this->countries();
         $this->statesAndCities();
         $this->wrestlingVenues();
+        $this->japan26Project();
     }
 
     protected function countries()
     {
+        Country::updateOrCreate(
+            ['name' => 'Australia'],
+        );
+
         Country::updateOrCreate(
             ['name' => 'Japan'],
         );
@@ -60,9 +76,27 @@ class DatabaseSeeder extends Seeder
 
     protected function statesAndCities()
     {
+        $australia = Country::where('name', 'Japan')->first();
+
+        collect(self::AUSTRALIA_CITY_STATES)->each(function ($city) use (&$australia) {
+            $state = $australia->states()->updateOrCreate([
+                'name' => $city['state'],
+            ]);
+
+            $australia->cities()->updateOrCreate(
+                [
+                    'name' => $city['name'],
+                    'state_id' => $state->id,
+                ],
+                [
+                    'timezone' => $city['timezone'],
+                ],
+            );
+        });
+
         $japan = Country::where('name', 'Japan')->first();
 
-        collect(self::CITY_STATES)->each(function ($city) use (&$japan) {
+        collect(self::JAPAN_CITY_STATES)->each(function ($city) use (&$japan) {
             $state = $japan->states()->updateOrCreate([
                 'name' => $city['state'],
             ]);
@@ -83,7 +117,7 @@ class DatabaseSeeder extends Seeder
     {
         $japan = Country::where('name', 'Japan')->first();
 
-        collect(self::WRESTLING_VENUES)->each(function ($venue) use (&$japan) {
+        collect(self::JAPAN_WRESTLING_VENUES)->each(function ($venue) use (&$japan) {
             $city = $japan->cities()->where('name', $venue['city'])->first();
 
             $city->venues()->updateOrCreate([
@@ -91,5 +125,10 @@ class DatabaseSeeder extends Seeder
                 'name' => $venue['name'],
             ]);
         });
+    }
+
+    protected function japan26Project()
+    {
+        $this->call([Japan26Seeder::class]);
     }
 }
