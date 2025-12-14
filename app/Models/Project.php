@@ -24,6 +24,11 @@ class Project extends Model
         return $this->hasMany(ProjectVersion::class);
     }
 
+    public function latestVersion(): ProjectVersion|null
+    {
+        return $this->version()->orderBy('id', 'desc')->first();
+    }
+
     public function duration()
     {
         return $this->start_date->diffInDays($this->end_date);

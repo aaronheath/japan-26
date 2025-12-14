@@ -12,6 +12,13 @@ class Day extends Model
     /** @use HasFactory<\Database\Factories\DayFactory> */
     use HasFactory;
 
+    protected function casts()
+    {
+        return [
+            'date' => 'date',
+        ];
+    }
+
     public function version(): BelongsTo
     {
         return $this->belongsTo(ProjectVersion::class);
