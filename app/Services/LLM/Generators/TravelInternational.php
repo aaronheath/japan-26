@@ -3,8 +3,10 @@
 namespace App\Services\LLM\Generators;
 
 use App\Models\DayTravel;
+use App\Models\LlmCall;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
+use Prism\Prism\Text\PendingRequest;
 use Prism\Prism\Text\Response;
 
 class TravelInternational
@@ -37,17 +39,26 @@ class TravelInternational
                 'overnight' => $this->travel->overnight,
                 'date' => $this->travel->day->date->toDateString(),
             ]))
-//            ->withProviderOptions([
-//                'reasoning' => [
-//                    'max_tokens' =>  5000,
-//                ]
-//            ])
             ->withMaxTokens(5000)
             ->withClientOptions([
                 'timeout' => 30,
-//                'withMaxTokens' => 5000,
             ])
-            ->asText();
+            ->asText(function(PendingRequest $request, Response $response) {
+                $this->travel->llmCall()->create([
+                    'llm_model' => $request->model(),
+                    'prompt_tokens' => $response->usage->promptTokens,
+                    'completion_tokens' => $response->usage->completionTokens,
+                    'system_prompt_view' => 'prompts.system.travel-agent',
+                    'prompt_view' => 'prompts.system.travel-international',
+                    'prompt_args' => [
+                        'startCity' => $this->travel->startCity->only(['id', 'name']),
+                        'endCity' => $this->travel->endCity->only(['id', 'name']),
+                        'overnight' => $this->travel->overnight,
+                        'date' => $this->travel->day->date->toDateString(),
+                    ],
+                    'response' => $response->text,
+                ]);
+            });
 
         return $this;
     }

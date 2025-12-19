@@ -18,9 +18,12 @@ return new class extends Migration
         Schema::create('llm_calls', function (Blueprint $table) {
             $table->id();
             $table->morphs('llm_callable');
-            $table->string('llm_provider');
             $table->string('llm_model');
-            $table->text('prompt');
+            $table->unsignedBigInteger('prompt_tokens')->nullable();
+            $table->unsignedBigInteger('completion_tokens')->nullable();
+            $table->text('system_prompt_view')->nullable();
+            $table->text('prompt_view')->nullable();
+            $table->json('prompt_args')->nullable();
             $table->text('response')->nullable();
             $table->timestamps();
         });
@@ -108,6 +111,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
+        Schema::create('day_activities', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(Day::class);
+            $table->foreignIdFor(Venue::class)->nullable();
+            $table->foreignIdFor(City::class)->nullable();
+            $table->string('type');
+            $table->timestamps();
+        });
     }
 };

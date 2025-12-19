@@ -27,4 +27,9 @@ class DayTravel extends Model
     {
         return $this->belongsTo(City::class, 'end_city_id');
     }
+
+    public function llmCall()
+    {
+        return $this->morphOne(LLMCall::class, 'llm_callable');
+    }
 }

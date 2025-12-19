@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DayActivities;
 use App\Models\City;
 use App\Models\Project;
 use App\Models\ProjectVersion;
@@ -20,6 +21,7 @@ class Japan26Seeder extends Seeder
         $this->createVersion();
         $this->createDays();
         $this->createDayTravel();
+        $this->createDayActivities();
     }
 
     protected function createProject()
@@ -74,8 +76,8 @@ class Japan26Seeder extends Seeder
             ],
             [
                 // Day 4
-                'start_city' => '',
-                'end_city' => '',
+                'start_city' => 'Bunkyo',
+                'end_city' => 'Suita',
             ],
             [
                 // Day 5
@@ -172,7 +174,6 @@ class Japan26Seeder extends Seeder
                 return;
             }
 
-            ray($i + 1);
             $this->version->days()->where('number', $i + 1)->first()->travel()->updateOrCreate(
                 [],
                 [
@@ -181,6 +182,68 @@ class Japan26Seeder extends Seeder
                     'overnight' => $day['overnight'] ?? false,
                 ]
             );
+        });
+    }
+
+    protected function createDayActivities()
+    {
+        $activities = [
+            // Day 1
+            [],
+            // Day 2
+            [
+                [
+                    'type' => DayActivities::SIGHTSEEING,
+                ],
+            ],
+            // Day 3
+            [],
+            // Day 4
+            [],
+            // Day 5
+            [],
+            // Day 6
+            [],
+            // Day 7
+            [],
+            // Day 8
+            [],
+            // Day 9
+            [],
+            // Day 10
+            [],
+            // Day 11
+            [],
+            // Day 12
+            [],
+            // Day 13
+            [],
+            // Day 14
+            [],
+            // Day 15
+            [],
+            // Day 16
+            [],
+            // Day 17
+            [],
+            // Day 18
+            [],
+            // Day 19
+            [],
+            // Day 20
+            [],
+        ];
+
+        collect($activities)->each(function ($dayActivities, $i) {
+            foreach ($dayActivities as $activity) {
+                $this->version->days()->where('number', $i + 1)->first()->activities()->updateOrCreate(
+                    [
+                        'type' => $activity['type'],
+                        'venue_id' => $activity['venue_id'] ?? null,
+                        'city_id' => $activity['city_id'] ?? null,
+                    ]
+                );
+            }
         });
     }
 }
