@@ -6,6 +6,7 @@ use App\Enums\DayActivities;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DayActivity extends Model
 {
@@ -32,5 +33,47 @@ class DayActivity extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function llmCall(): MorphMany
+    {
+        return $this->morphMany(LLMCall::class, 'llm_callable');
+    }
+
+    public function latestLlmCall(): LLMCall|null
+    {
+        return $this->llmCall()->orderBy('id', 'desc')->first();
+    }
+
+    public function useCity()
+    {
+        return $this->city ?? $this->venue?->city ?? $this->inferCityForDay($this->day);
+    }
+
+    protected function inferCityForDay(Day $day)
+    {
+//        ray()->showQueries();
+//        ray($day->fresh()->version()->get());
+//        ray()->stopShowingQueries();
+
+        // If there's travel on this day, return the appropriate city
+        if($day->travel) {
+            return $day->travel->overnight
+                ? $day->travel->startCity
+                : $day->travel->endCity;
+        }
+
+        // Otherwise find the most recent day that had travel and return the end city of that travel
+        $mostRecentDayWithTravel = $day
+            ->version
+            ->days()
+            ->where('number', '<', $day->number)
+            ->whereHas('travel')
+            ->orderBy('number', 'desc')
+            ->first();
+
+        return is_null($mostRecentDayWithTravel)
+            ? null
+            : $mostRecentDayWithTravel->travel->endCity;
     }
 }

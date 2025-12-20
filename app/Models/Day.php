@@ -22,7 +22,7 @@ class Day extends Model
 
     public function version(): BelongsTo
     {
-        return $this->belongsTo(ProjectVersion::class);
+        return $this->belongsTo(ProjectVersion::class, 'project_version_id');
     }
 
     public function travel(): HasOne

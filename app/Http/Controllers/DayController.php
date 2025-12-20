@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Day;
+use App\Models\DayActivity;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,7 @@ class DayController extends Controller
             'tab' => request()->query('tab', 'overview'),
             'day' => $this->day,
             'travel' => $this->travel(),
+            'activities' => $this->activities(),
         ];
 
         ray($data);
@@ -41,5 +43,18 @@ class DayController extends Controller
             'end_city' => $travel->endCity->only(['id', 'name', 'country_code']),
             'llm_call' => $travel->latestLlmCall()?->only(['id', 'response', 'created_at']),
         ];
+    }
+
+    protected function activities()
+    {
+        return $this->day->activities()->get()->map(function (DayActivity $activity) {
+            return [
+//                'id' => $activity->id,
+                'type' => $activity->type,
+//                'venue' => $activity->venue?->only(['id', 'name']) ?? null,
+                'city' => $activity->useCity()?->only(['id', 'name', 'country_code']) ?? null,
+                'llm_call' => $activity->latestLlmCall()?->only(['id', 'response', 'created_at']) ?? null,
+            ];
+        });
     }
 }
