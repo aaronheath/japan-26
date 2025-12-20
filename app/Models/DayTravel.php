@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DayTravel extends Model
 {
@@ -28,8 +29,13 @@ class DayTravel extends Model
         return $this->belongsTo(City::class, 'end_city_id');
     }
 
-    public function llmCall()
+    public function llmCall(): MorphMany
     {
-        return $this->morphOne(LLMCall::class, 'llm_callable');
+        return $this->morphMany(LLMCall::class, 'llm_callable');
+    }
+
+    public function latestLlmCall(): LLMCall|null
+    {
+        return $this->llmCall()->orderBy('id', 'desc')->first();
     }
 }

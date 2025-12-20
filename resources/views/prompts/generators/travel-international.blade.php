@@ -16,3 +16,5 @@ You are to provide at least 3 travel options making sure to detail all airports,
 
 Where a destination has multiple airports, you should prioritize the most convenient airport for the traveler. The
 traveller priorities easy transfers. No special consideration has to be made for excess baggage or special assistance.
+
+Provide estimated costs for all classes of travel (e.g. Economy, Premium Economy, Business, First Class) where available. Provide costings in Australian Dollars.
