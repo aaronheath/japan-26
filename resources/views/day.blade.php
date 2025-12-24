@@ -34,7 +34,7 @@
             <h2 class="text-lg font-bold">Travel</h2>
 
             <div>
-                <p>{{ $travel['start_city']['name'] }} to {{ $travel['end_city']['name'] }}</p>
+                <p>{{ $travel['start_city']->name }}, {{ $travel['start_city']->state->name }}  to {{ $travel['end_city']->name }}, {{ $travel['end_city']->state->name }}</p>
             </div>
 
             @if($travel['llm_call']['response'] ?? false)
