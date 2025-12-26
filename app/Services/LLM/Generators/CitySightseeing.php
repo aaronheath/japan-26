@@ -5,21 +5,16 @@ namespace App\Services\LLM\Generators;
 use App\Models\DayActivity;
 use App\Models\DayTravel;
 use App\Models\LlmCall;
+use Faker\Provider\Base;
+use Illuminate\Database\Eloquent\Model;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
 use Prism\Prism\Text\PendingRequest;
 use Prism\Prism\Text\Response;
 
-class CitySightseeing
+class CitySightseeing extends BaseLlmGenerator
 {
     protected DayActivity $activity;
-
-    protected Response $response;
-
-    public static function make(): static
-    {
-        return new static();
-    }
 
     public function activity(DayActivity $activity)
     {
@@ -28,40 +23,21 @@ class CitySightseeing
         return $this;
     }
 
-    public function generate()
+    protected function syncToModel(): Model
     {
-        $this->response = Prism::text()
-            ->using(Provider::OpenRouter, 'google/gemini-2.5-flash')
-//            ->using(Provider::OpenRouter, 'google/gemini-2.5-pro')
-            ->withSystemPrompt(view('prompts.system.travel-agent'))
-            ->withPrompt(view('prompts.generators.city-sightseeing', [
-                'city' => $this->activity->useCity(),
-                'date' => $this->activity->day->date->toDateString(),
-            ]))
-            ->withMaxTokens(5000)
-            ->withClientOptions([
-                'timeout' => 30,
-            ])
-            ->asText(function(PendingRequest $request, Response $response) {
-                $this->activity->llmCall()->create([
-                    'llm_model' => $request->model(),
-                    'prompt_tokens' => $response->usage->promptTokens,
-                    'completion_tokens' => $response->usage->completionTokens,
-                    'system_prompt_view' => 'prompts.system.travel-agent',
-                    'prompt_view' => 'prompts.generators.city-sightseeing',
-                    'prompt_args' => [
-                        'city' => $this->activity->useCity(),
-                        'date' => $this->activity->day->date->toDateString(),
-                    ],
-                    'response' => $response->text,
-                ]);
-            });
-
-        return $this;
+        return $this->activity;
     }
 
-    public function getResponse()
+    protected function promptView(): string
     {
-        return $this->response;
+        return 'prompts.generators.city-sightseeing';
+    }
+
+    protected function promptArgs()
+    {
+        return [
+            'city' => $this->activity->useCity(),
+            'date' => $this->activity->day->date->toDateString(),
+        ];
     }
 }

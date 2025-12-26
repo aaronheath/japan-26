@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DayActivities;
+use App\Traits\LlmCallable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ class DayActivity extends Model
 {
     /** @use HasFactory<\Database\Factories\DayTravelFactory> */
     use HasFactory;
+    use LlmCallable;
 
     protected function casts(): array
     {
@@ -33,16 +35,6 @@ class DayActivity extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
-    }
-
-    public function llmCall(): MorphMany
-    {
-        return $this->morphMany(LLMCall::class, 'llm_callable');
-    }
-
-    public function latestLlmCall(): LLMCall|null
-    {
-        return $this->llmCall()->orderBy('id', 'desc')->first();
     }
 
     public function useCity()

@@ -3,6 +3,7 @@
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Day;
+use App\Models\LlmCall;
 use App\Models\Project;
 use App\Models\ProjectVersion;
 use App\Models\State;
@@ -17,15 +18,26 @@ return new class extends Migration
     {
         Schema::create('llm_calls', function (Blueprint $table) {
             $table->id();
-            $table->morphs('llm_callable');
-            $table->string('llm_model');
-            $table->unsignedBigInteger('prompt_tokens')->nullable();
-            $table->unsignedBigInteger('completion_tokens')->nullable();
-            $table->text('system_prompt_view')->nullable();
-            $table->text('prompt_view')->nullable();
-            $table->json('prompt_args')->nullable();
-            $table->text('response')->nullable();
+//            $table->morphs('llm_callable');
+            $table->string('llm_provider_name');
+            $table->text('system_prompt_view');
+            $table->text('prompt_view');
+//            $table->string('prompt_args_hash', 64)->nullable();
+            $table->mediumText('prompt_args');
+            $table->text('response');
+            $table->string('overall_request_hash', 64)->index();
+            $table->string('system_prompt_hash', 64);
+            $table->string('prompt_hash', 64);
+            $table->string('response_hash', 64);
+            $table->unsignedBigInteger('prompt_tokens');
+            $table->unsignedBigInteger('completion_tokens');
             $table->timestamps();
+        });
+
+        Schema::create('llm_callables', function (Blueprint $table) {
+            $table->foreignIdFor(LlmCall::class);
+            $table->morphs('llm_callable');
+            $table->string('generator');
         });
 
         Schema::create('countries', function (Blueprint $table) {
