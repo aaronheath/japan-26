@@ -106,7 +106,10 @@ abstract class BaseLlmGenerator
         return $this;
     }
 
-    abstract protected function syncToModel(): Model;
+    /**
+     * @return Model[]
+     */
+    abstract protected function syncToModels(): array;
 
     protected function store()
     {
@@ -120,9 +123,12 @@ abstract class BaseLlmGenerator
             'completion_tokens' => $this->response->usage->completionTokens,
         ]);
 
-        $this
-            ->syncToModel()
-            ->llmCall()
-            ->attach($this->llmCall->id, ['generator' => static::class]);
+        collect($this->syncToModels())
+            ->filter()
+            ->each(function(Model $model) {
+                $model
+                    ->llmCall()
+                    ->attach($this->llmCall->id, ['generator' => static::class]);
+            });
     }
 }

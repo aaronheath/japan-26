@@ -2,6 +2,7 @@
 
 namespace App\Services\LLM\Generators;
 
+use App\Models\City;
 use App\Models\DayActivity;
 use App\Models\DayTravel;
 use App\Models\LlmCall;
@@ -15,6 +16,7 @@ use Prism\Prism\Text\Response;
 class CitySightseeing extends BaseLlmGenerator
 {
     protected DayActivity $activity;
+    protected City $city;
 
     public function activity(DayActivity $activity)
     {
@@ -23,9 +25,21 @@ class CitySightseeing extends BaseLlmGenerator
         return $this;
     }
 
-    protected function syncToModel(): Model
+    public function city(City $city)
     {
-        return $this->activity;
+        $this->city = $city;
+
+        return $this;
+    }
+
+    protected function syncToModels(): array
+    {
+        // If a city is explicitly set, sync only that
+        if(isset($this->city)) {
+            return [$this->city];
+        }
+
+        return [$this->activity, $this->activity->useCity()];
     }
 
     protected function promptView(): string
@@ -35,6 +49,12 @@ class CitySightseeing extends BaseLlmGenerator
 
     protected function promptArgs()
     {
+        if(isset($this->city)) {
+            return [
+                'city' => $this->city,
+            ];
+        }
+
         return [
             'city' => $this->activity->useCity(),
             'date' => $this->activity->day->date->toDateString(),

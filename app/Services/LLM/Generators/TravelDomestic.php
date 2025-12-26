@@ -21,9 +21,9 @@ class TravelDomestic extends BaseLlmGenerator
         return $this;
     }
 
-    protected function syncToModel(): Model
+    protected function syncToModels(): array
     {
-        return $this->travel;
+        return [$this->travel];
     }
 
     protected function promptView(): string
