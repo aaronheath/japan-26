@@ -1,0 +1,15 @@
+{
+    "agents": [
+        "claude_code",
+        "copilot",
+        "phpstorm"
+    ],
+    "editors": [
+        "claude_code",
+        "phpstorm"
+    ],
+    "guidelines": [
+        "prism-php/prism"
+    ],
+    "herd_mcp": true
+}
