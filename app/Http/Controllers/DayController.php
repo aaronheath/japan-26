@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Day;
 use App\Models\DayActivity;
 use App\Models\Project;
-use Illuminate\Http\Request;
 
 class DayController extends Controller
 {
-    protected Day|null $day;
+    protected ?Day $day;
 
     public function __invoke(Project $project, int $day)
     {
@@ -34,7 +33,7 @@ class DayController extends Controller
     {
         $travel = $this->day->travel;
 
-        if(!$travel) {
+        if (! $travel) {
             return [];
         }
 
@@ -49,9 +48,9 @@ class DayController extends Controller
     {
         return $this->day->activities()->get()->map(function (DayActivity $activity) {
             return [
-//                'id' => $activity->id,
+                //                'id' => $activity->id,
                 'type' => $activity->type,
-//                'venue' => $activity->venue?->only(['id', 'name']) ?? null,
+                //                'venue' => $activity->venue?->only(['id', 'name']) ?? null,
                 'city' => $activity->useCity()?->only(['id', 'name', 'country_code']) ?? null,
                 'llm_call' => $activity->latestLlmCall()?->only(['id', 'response', 'created_at']) ?? null,
             ];

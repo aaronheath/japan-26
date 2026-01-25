@@ -7,12 +7,12 @@ use App\Traits\LlmCallable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DayActivity extends Model
 {
     /** @use HasFactory<\Database\Factories\DayTravelFactory> */
     use HasFactory;
+
     use LlmCallable;
 
     protected function casts(): array
@@ -44,12 +44,12 @@ class DayActivity extends Model
 
     protected function inferCityForDay(Day $day)
     {
-//        ray()->showQueries();
-//        ray($day->fresh()->version()->get());
-//        ray()->stopShowingQueries();
+        //        ray()->showQueries();
+        //        ray($day->fresh()->version()->get());
+        //        ray()->stopShowingQueries();
 
         // If there's travel on this day, return the appropriate city
-        if($day->travel) {
+        if ($day->travel) {
             return $day->travel->overnight
                 ? $day->travel->startCity
                 : $day->travel->endCity;

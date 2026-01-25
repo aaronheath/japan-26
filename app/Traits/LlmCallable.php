@@ -14,7 +14,7 @@ trait LlmCallable
             ->withPivot('generator');
     }
 
-    public function latestLlmCall(): LlmCall|null
+    public function latestLlmCall(): ?LlmCall
     {
         return $this
             ->llmCall()
@@ -22,7 +22,7 @@ trait LlmCallable
             ->first();
     }
 
-    public function latestLlmCallByGenerator(string $generator): LlmCall|null
+    public function latestLlmCallByGenerator(string $generator): ?LlmCall
     {
         return $this
             ->llmCall()

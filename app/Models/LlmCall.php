@@ -44,19 +44,19 @@ class LlmCall extends Model
     {
         ray($model->toArray());
 
-        if(! is_null($model->system_prompt_view)) {
+        if (! is_null($model->system_prompt_view)) {
             $model->system_prompt_hash = hash('sha256', view($model->system_prompt_view));
         }
 
-        if(! is_null($model->prompt_view)) {
+        if (! is_null($model->prompt_view)) {
             $model->prompt_hash = hash('sha256', view($model->prompt_view, $model->prompt_args));
         }
 
-//        if(! is_null($model->prompt_args)) {
-//            $model->prompt_args_hash = hash('sha256', json_encode($model->prompt_args));
-//        }
+        //        if(! is_null($model->prompt_args)) {
+        //            $model->prompt_args_hash = hash('sha256', json_encode($model->prompt_args));
+        //        }
 
-        if($model->system_prompt_hash && $model->prompt_hash) {
+        if ($model->system_prompt_hash && $model->prompt_hash) {
             $model->overall_request_hash = hash('sha256', sprintf(
                 '%s---%s---%s',
                 $model->llm_provider_name->value,
@@ -65,7 +65,7 @@ class LlmCall extends Model
             ));
         }
 
-        if(! is_null($model->response)) {
+        if (! is_null($model->response)) {
             $model->response_hash = hash('sha256', $model->response);
         }
 
