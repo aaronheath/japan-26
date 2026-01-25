@@ -3,6 +3,209 @@
 
 # Application Architecture
 
+## Tech Stack
+
+**Backend**: PHP 8.4, Laravel 12, Inertia.js v2, Prism (LLM integration)
+**Frontend**: React 19, TypeScript, Tailwind CSS v4, Wayfinder, Radix UI
+**Database**: MySQL
+**Testing**: Pest v4
+**Code Quality**: PHPStan, Laravel Pint, ESLint, Prettier, Husky pre-commit hooks
+
+## Directory Structure
+
+### Backend (`/app`)
+
+```
+app/
+├── Casts/               # Custom Eloquent casts
+├── Enums/               # DayActivities, LlmModels
+├── Http/
+│   ├── Controllers/     # ProjectController, DayController, Settings
+│   ├── Middleware/      # Inertia, Appearance handling
+│   └── Requests/        # Form validation classes
+├── Models/              # Eloquent models (see Domain Models below)
+├── Providers/           # AppServiceProvider, FortifyServiceProvider
+├── Services/
+│   └── LLM/             # LLM generation service and generators
+├── Traits/              # LlmCallable trait
+└── View/Components/     # Blade layout component
+```
+
+### Frontend (`/resources/js`)
+
+```
+resources/js/
+├── actions/             # Wayfinder-generated TypeScript route actions
+├── components/
+│   └── ui/              # Shadcn/Radix UI components
+├── hooks/               # Custom React hooks
+├── layouts/             # App, Auth, Settings layouts
+├── pages/               # Inertia page components
+├── routes/              # Wayfinder-generated named routes
+├── app.tsx              # React entry point
+└── lib/utils.ts         # Utility functions
+```
+
+## Domain Models
+
+### Travel Planning
+
+| Model | Purpose | Key Relationships |
+|-------|---------|-------------------|
+| `Project` | Complete trip with dates | Has many `ProjectVersion` |
+| `ProjectVersion` | Versioned itinerary snapshot | Has many `Day` |
+| `Day` | Single day in itinerary | Has one `DayTravel`, many `DayActivity`, one `DayAccommodation` |
+| `DayTravel` | City-to-city movement | Belongs to start/end `City` |
+| `DayActivity` | Activity during a day | Belongs to `Venue` or `City` |
+| `DayAccommodation` | Lodging for a day | Belongs to `Venue` |
+
+### Geography
+
+| Model | Purpose | Key Relationships |
+|-------|---------|-------------------|
+| `Country` | Country container | Has many `State`, `City` |
+| `State` | State/prefecture | Belongs to `Country`, has many `City` |
+| `City` | City with timezone | Belongs to `Country`, `State`, has many `Venue` |
+| `Venue` | Specific location | Belongs to `City`, has type (hotel, restaurant, etc.) |
+
+### AI Interactions
+
+| Model | Purpose |
+|-------|---------|
+| `LlmCall` | Stores every LLM API call with prompts, responses, and token counts |
+
+## LLM Service Architecture
+
+### Service Layer (`app/Services/LLM/`)
+
+**GenerateRequiredLLMInteractions**
+- Orchestrates what needs AI generation for a project
+- Analyzes project structure and builds interaction manifest
+- Returns structured data for UI consumption
+
+**BaseLlmGenerator** (Abstract)
+- Base class for all LLM generators
+- Manages Prism integration with caching via hash comparison
+- Handles prompt rendering from Blade views (`resources/views/prompts/`)
+- Stores `LlmCall` records with token counts
+
+**Concrete Generators**
+- `CitySightseeing`: City sightseeing suggestions
+- `TravelDomestic`: Domestic Japan travel recommendations
+- `TravelInternational`: International flight suggestions
+
+### LlmCallable Trait
+
+Models that receive LLM-generated content use the `LlmCallable` trait:
+- Provides `llmCall()` polymorphic relationship
+- `latestLlmCall()` retrieves most recent interaction
+- `latestLlmCallByGenerator()` fetches by generator class
+
+## Frontend Architecture
+
+### Inertia + React
+
+- Server-side routing via Laravel controllers
+- React components receive props via Inertia
+- Wayfinder generates TypeScript route actions for type safety
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `AppLayout` | Main authenticated layout |
+| `AppShell` | Navigation wrapper |
+| `AppSidebar` | Persistent sidebar navigation |
+| `AppHeader` | Top bar with user menu |
+
+### Custom Hooks
+
+- `use-appearance`: Dark/light mode management
+- `use-mobile`: Mobile device detection
+- `use-two-factor-auth`: 2FA state and actions
+
+## Authentication
+
+- **Framework**: Laravel Fortify
+- **Features**: Registration, login, 2FA with recovery codes, email verification
+- **Middleware**: `HandleInertiaRequests` shares user and app state
+
+## Routes
+
+### Web Routes
+
+| Route | Controller | Purpose |
+|-------|------------|---------|
+| `/` | - | Home page |
+| `/dashboard` | - | Authenticated dashboard |
+| `/project/{project}` | `ProjectController@show` | Project overview |
+| `/project/{project}/day/{day}` | `DayController` | Day details |
+| `/settings/*` | Settings controllers | Profile, password, 2FA |
+
+## Key Patterns
+
+### Service Pattern
+```php
+GenerateRequiredLLMInteractions::make()
+    ->project($project)
+    ->run()
+    ->getInteractions();
+```
+
+### Generator Pattern
+```php
+CitySightseeing::make()
+    ->activity($dayActivity)
+    ->call();
+```
+
+### Blade View Prompts
+LLM prompts are Blade views in `resources/views/prompts/` with dynamic variables for city, date, activity type, etc.
+
+=== .ai/overview rules ===
+
+# Japan 26
+
+This app is a companion app to help in the planning of a holiday to Japan in 2026.
+
+Through the use of AI services and data this app will help plan the trip. It will provide recommendations on:
+
+- Flights (International and Domestic)
+- Intercity transport (trains, planes and buses)
+- Hotels
+- Sightseeing activities
+- Local transport options (trains and buses) from point A to point B
+
+## Core Concepts
+
+### Projects
+A project represents a complete trip with a start date and end date. Projects can have multiple versions (ProjectVersion) allowing iteration on travel plans.
+
+### Days
+Each day in a project's itinerary contains:
+- **Travel**: Optional movement between cities (domestic or international)
+- **Activities**: Sightseeing, wrestling events, dining experiences
+- **Accommodation**: Where to stay (when not traveling overnight)
+
+### Activity Types
+The app supports these activity types via the `DayActivities` enum:
+- `SIGHTSEEING`: Tourist attractions and experiences
+- `WRESTLING`: Japanese wrestling events (a focus of the trip)
+- `EATING`: Restaurant and dining recommendations
+
+### Geographic Hierarchy
+- **Country** → **State** → **City** → **Venue**
+- Venues have types (hotels, restaurants, wrestling venues, train stations)
+
+## AI-Powered Features
+
+The app uses Prism with OpenRouter (Google Gemini models) to generate:
+- City sightseeing suggestions based on interests and dates
+- Domestic travel recommendations between Japanese cities
+- International travel suggestions for arrival/departure
+
+All LLM interactions are cached and stored in `LlmCall` records for cost optimization and auditability.
+
 === .ai/tests rules ===
 
 # Tests
@@ -71,6 +274,41 @@ You must never commit directly to the `main` branch.
 
 Development must always be committed to a new branch of work that is not `main`.
 
+=== .ai/documentation rules ===
+
+# Documentation Guidelines
+
+## Keeping Documentation Current
+
+When making updates to the codebase, review and update the following guideline files as necessary:
+
+- `.ai/guidelines/architecture.md` - Update when:
+  - Adding new models or changing model relationships
+  - Creating new services, controllers, or significant classes
+  - Adding new frontend components, hooks, or pages
+  - Changing the directory structure
+  - Adding new routes
+  - Modifying authentication or middleware
+  - Introducing new patterns or conventions
+
+- `.ai/guidelines/overview.md` - Update when:
+  - Adding new core concepts or domain entities
+  - Changing the purpose or scope of the application
+  - Adding new activity types or feature categories
+  - Modifying AI/LLM capabilities
+
+Documentation updates should be concise and follow the existing format in each file.
+
+## After Updating Guidelines
+
+Whenever any file in the `.ai/guidelines/` directory is created or modified, the pre-commit hook will automatically run:
+
+```bash
+herd php artisan boost:install
+```
+
+This ensures Laravel Boost recompiles the guidelines into the CLAUDE.md file. The updated CLAUDE.md is automatically staged with the commit.
+
 === .ai/development rules ===
 
 # Development Guidelines
@@ -100,6 +338,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
 - laravel/wayfinder (WAYFINDER) - v0
+- larastan/larastan (LARASTAN) - v3
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1

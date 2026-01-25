@@ -1,3 +1,10 @@
+# Check if any files in .ai/guidelines/ are staged
+if git diff --cached --name-only | grep -q "^\.ai/guidelines/"; then
+    echo "Running boost:install..."
+    herd php artisan boost:install
+    git add CLAUDE.md
+fi
+
 echo "Running phpstan..."
 composer run phpstan
 
