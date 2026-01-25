@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait LlmCallable
 {
+    /**
+     * @return MorphToMany<LlmCall, $this>
+     */
     public function llmCall(): MorphToMany
     {
         return $this
@@ -16,6 +19,7 @@ trait LlmCallable
 
     public function latestLlmCall(): ?LlmCall
     {
+        /** @var LlmCall|null */
         return $this
             ->llmCall()
             ->orderBy('id', 'desc')
@@ -24,6 +28,7 @@ trait LlmCallable
 
     public function latestLlmCallByGenerator(string $generator): ?LlmCall
     {
+        /** @var LlmCall|null */
         return $this
             ->llmCall()
             ->wherePivot('generator', $generator)

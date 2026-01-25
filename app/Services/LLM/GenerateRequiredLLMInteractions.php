@@ -4,6 +4,7 @@ namespace App\Services\LLM;
 
 use App\Models\City;
 use App\Models\Day;
+use App\Models\DayActivity;
 use App\Models\Project;
 use App\Models\ProjectVersion;
 
@@ -18,9 +19,9 @@ class GenerateRequiredLLMInteractions
         'daily' => [],
     ];
 
-    public static function make(): static
+    public static function make(): self
     {
-        return new static;
+        return new self;
     }
 
     public function project(Project $project)
@@ -43,9 +44,9 @@ class GenerateRequiredLLMInteractions
         return $this->interactions;
     }
 
-    protected function addDailyInteractions()
+    protected function addDailyInteractions(): void
     {
-        $this->version->days->each(function ($day, $i) {
+        $this->version->days->each(function (Day $day, int $i) {
             $dayInteractions = [
                 'day_id' => $day->id,
                 'travel' => [],
@@ -106,7 +107,7 @@ class GenerateRequiredLLMInteractions
             //            ray($day->activities);
 
             if ($day->activities->isNotEmpty()) {
-                $dayInteractions['activities'] = $day->activities->map(function ($activity) {
+                $dayInteractions['activities'] = $day->activities->map(function (DayActivity $activity) {
                     ray($this->inferCityForDay($activity->day)?->toArray());
 
                     $city = $activity->city ?: $this->inferCityForDay($activity->day);
@@ -134,8 +135,9 @@ class GenerateRequiredLLMInteractions
         });
     }
 
-    protected function daysUntilNextTravel(Day $day)
+    protected function daysUntilNextTravel(Day $day): ?int
     {
+        /** @var Day|null $nextDayWithTravel */
         $nextDayWithTravel = $this
             ->version
             ->days()
@@ -149,7 +151,7 @@ class GenerateRequiredLLMInteractions
             : $nextDayWithTravel->number - $day->number;
     }
 
-    protected function inferCityForDay(Day $day)
+    protected function inferCityForDay(Day $day): ?City
     {
         // If there's travel on this day, return the appropriate city
         if ($day->travel) {
@@ -159,6 +161,7 @@ class GenerateRequiredLLMInteractions
         }
 
         // Otherwise find the most recent day that had travel and return the end city of that travel
+        /** @var Day|null $mostRecentDayWithTravel */
         $mostRecentDayWithTravel = $this
             ->version
             ->days()
@@ -169,6 +172,6 @@ class GenerateRequiredLLMInteractions
 
         return is_null($mostRecentDayWithTravel)
             ? null
-            : $mostRecentDayWithTravel->travel->endCity;
+            : $mostRecentDayWithTravel->travel?->endCity;
     }
 }

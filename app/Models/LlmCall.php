@@ -37,7 +37,7 @@ class LlmCall extends Model
 
     public function activities()
     {
-        return $this->morphyByMany(DayActivity::class, 'llm_callable');
+        return $this->morphedByMany(DayActivity::class, 'llm_callable');
     }
 
     public static function hashes(LlmCall $model)
@@ -49,7 +49,7 @@ class LlmCall extends Model
         }
 
         if (! is_null($model->prompt_view)) {
-            $model->prompt_hash = hash('sha256', view($model->prompt_view, $model->prompt_args));
+            $model->prompt_hash = hash('sha256', view($model->prompt_view, $model->prompt_args ?? []));
         }
 
         //        if(! is_null($model->prompt_args)) {
@@ -57,9 +57,12 @@ class LlmCall extends Model
         //        }
 
         if ($model->system_prompt_hash && $model->prompt_hash) {
+            $llmProviderValue = $model->llm_provider_name instanceof LlmModels
+                ? $model->llm_provider_name->value
+                : $model->llm_provider_name;
             $model->overall_request_hash = hash('sha256', sprintf(
                 '%s---%s---%s',
-                $model->llm_provider_name->value,
+                $llmProviderValue,
                 $model->system_prompt_hash,
                 $model->prompt_hash,
             ));

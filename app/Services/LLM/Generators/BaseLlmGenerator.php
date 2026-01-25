@@ -29,7 +29,7 @@ abstract class BaseLlmGenerator
 
     public static function make(): static
     {
-        return new static;
+        return new static; // @phpstan-ignore new.static
     }
 
     public function dontUseCache()
@@ -73,7 +73,7 @@ abstract class BaseLlmGenerator
         $this->usedPromptView = $this->promptView();
         $this->usedPromptArgs = $this->promptArgs();
 
-        $projectedHashes = LlmCall::hashes(LlmCall::make([
+        $projectedHashes = LlmCall::hashes(new LlmCall([
             'llm_provider_name' => $this->usedLlmProviderName,
             'system_prompt_view' => $this->usedSystemPromptView,
             'prompt_view' => $this->usedPromptView,
@@ -125,6 +125,7 @@ abstract class BaseLlmGenerator
         collect($this->syncToModels())
             ->filter()
             ->each(function (Model $model) {
+                /** @phpstan-ignore method.notFound */
                 $model
                     ->llmCall()
                     ->attach($this->llmCall->id, ['generator' => static::class]);
