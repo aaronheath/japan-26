@@ -1,5 +1,5 @@
-#echo "Running phpstan..."
-#composer run phpstan
+echo "Running phpstan..."
+composer run phpstan
 
 echo "Running pint..."
 composer run pint-repair
