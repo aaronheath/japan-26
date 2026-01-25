@@ -20,3 +20,13 @@ When making updates to the codebase, review and update the following guideline f
   - Modifying AI/LLM capabilities
 
 Documentation updates should be concise and follow the existing format in each file.
+
+## After Updating Guidelines
+
+Whenever any file in the `.ai/guidelines/` directory is created or modified, the pre-commit hook will automatically run:
+
+```bash
+herd php artisan boost:install
+```
+
+This ensures Laravel Boost recompiles the guidelines into the CLAUDE.md file. The updated CLAUDE.md is automatically staged with the commit.
