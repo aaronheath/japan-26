@@ -18,11 +18,11 @@ return new class extends Migration
     {
         Schema::create('llm_calls', function (Blueprint $table) {
             $table->id();
-//            $table->morphs('llm_callable');
+            //            $table->morphs('llm_callable');
             $table->string('llm_provider_name');
             $table->text('system_prompt_view');
             $table->text('prompt_view');
-//            $table->string('prompt_args_hash', 64)->nullable();
+            //            $table->string('prompt_args_hash', 64)->nullable();
             $table->mediumText('prompt_args');
             $table->text('response');
             $table->string('overall_request_hash', 64)->index();

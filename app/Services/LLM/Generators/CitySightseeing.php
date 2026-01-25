@@ -4,18 +4,11 @@ namespace App\Services\LLM\Generators;
 
 use App\Models\City;
 use App\Models\DayActivity;
-use App\Models\DayTravel;
-use App\Models\LlmCall;
-use Faker\Provider\Base;
-use Illuminate\Database\Eloquent\Model;
-use Prism\Prism\Enums\Provider;
-use Prism\Prism\Facades\Prism;
-use Prism\Prism\Text\PendingRequest;
-use Prism\Prism\Text\Response;
 
 class CitySightseeing extends BaseLlmGenerator
 {
     protected DayActivity $activity;
+
     protected City $city;
 
     public function activity(DayActivity $activity)
@@ -35,7 +28,7 @@ class CitySightseeing extends BaseLlmGenerator
     protected function syncToModels(): array
     {
         // If a city is explicitly set, sync only that
-        if(isset($this->city)) {
+        if (isset($this->city)) {
             return [$this->city];
         }
 
@@ -49,7 +42,7 @@ class CitySightseeing extends BaseLlmGenerator
 
     protected function promptArgs()
     {
-        if(isset($this->city)) {
+        if (isset($this->city)) {
             return [
                 'city' => $this->city,
             ];

@@ -6,7 +6,6 @@ use App\Enums\DayActivities;
 use App\Models\City;
 use App\Models\Project;
 use App\Models\ProjectVersion;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class Japan26Seeder extends Seeder
@@ -44,7 +43,7 @@ class Japan26Seeder extends Seeder
 
     protected function createDays()
     {
-        for($i = 0; $i <= $this->project->duration(); $i++) {
+        for ($i = 0; $i <= $this->project->duration(); $i++) {
             $this->version->days()->updateOrCreate(
                 [
                     'number' => $i + 1,
@@ -170,7 +169,7 @@ class Japan26Seeder extends Seeder
             $startCity = City::where('name', $day['start_city'])->first();
             $endCity = City::where('name', $day['end_city'])->first();
 
-            if (!$startCity || !$endCity) {
+            if (! $startCity || ! $endCity) {
                 return;
             }
 

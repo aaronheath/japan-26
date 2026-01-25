@@ -20,7 +20,7 @@ class GenerateRequiredLLMInteractions
 
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 
     public function project(Project $project)
@@ -52,7 +52,7 @@ class GenerateRequiredLLMInteractions
                 'activities' => [],
             ];
 
-            if($day->travel) {
+            if ($day->travel) {
                 $dayInteractions['travel'] = [
                     'type' => $day->travel->startCity->state->country->id === $day->travel->endCity->state->country->id
                         ? 'domestic'
@@ -72,7 +72,7 @@ class GenerateRequiredLLMInteractions
                     'overnight' => $day->travel->overnight,
                 ];
 
-                if(! $day->travel->overnight) {
+                if (! $day->travel->overnight) {
                     // If not overnight, we may need to generate accommodation interactions
                     $dayInteractions['accommodation'] = [
                         'city' => [
@@ -86,7 +86,7 @@ class GenerateRequiredLLMInteractions
                 }
 
                 // Check if previous day had an overnight travel, if so then we need to generate accommodation interactions
-                if($i > 0) {
+                if ($i > 0) {
                     $previousDay = $this->version->days[$i - 1];
 
                     if ($previousDay->travel?->overnight) {
@@ -103,9 +103,9 @@ class GenerateRequiredLLMInteractions
                 }
             }
 
-//            ray($day->activities);
+            //            ray($day->activities);
 
-            if($day->activities->isNotEmpty()) {
+            if ($day->activities->isNotEmpty()) {
                 $dayInteractions['activities'] = $day->activities->map(function ($activity) {
                     ray($this->inferCityForDay($activity->day)?->toArray());
 
@@ -152,7 +152,7 @@ class GenerateRequiredLLMInteractions
     protected function inferCityForDay(Day $day)
     {
         // If there's travel on this day, return the appropriate city
-        if($day->travel) {
+        if ($day->travel) {
             return $day->travel->overnight
                 ? $day->travel->startCity
                 : $day->travel->endCity;

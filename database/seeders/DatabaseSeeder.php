@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         ['name' => 'Takasaki', 'state' => 'Gunma'],
         ['name' => 'Hamamatsu', 'state' => 'Shizuoka'],
         ['name' => 'Koto', 'state' => 'Tokyo'],
-//        ['name' => '', 'state' => ''],
+        //        ['name' => '', 'state' => ''],
     ];
 
     const JAPAN_WRESTLING_VENUES = [

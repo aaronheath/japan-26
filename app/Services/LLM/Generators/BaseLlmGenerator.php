@@ -7,7 +7,6 @@ use App\Models\LlmCall;
 use Illuminate\Database\Eloquent\Model;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
-use Prism\Prism\Text\PendingRequest;
 use Prism\Prism\Text\Response;
 
 abstract class BaseLlmGenerator
@@ -22,15 +21,15 @@ abstract class BaseLlmGenerator
 
     protected bool $useCache = true;
 
-    protected LlmCall|null $llmCall = null;
+    protected ?LlmCall $llmCall = null;
 
-    protected Response|null $response = null;
+    protected ?Response $response = null;
 
-    protected string|null $responseText = null;
+    protected ?string $responseText = null;
 
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 
     public function dontUseCache()
@@ -81,12 +80,12 @@ abstract class BaseLlmGenerator
             'prompt_args' => $this->usedPromptArgs,
         ]));
 
-        if($this->useCache) {
+        if ($this->useCache) {
             $this->llmCall = LlmCall::query()
                 ->where('overall_request_hash', $projectedHashes->overall_request_hash)
                 ->first();
 
-            if($this->llmCall) {
+            if ($this->llmCall) {
                 return $this;
             }
         }
@@ -125,7 +124,7 @@ abstract class BaseLlmGenerator
 
         collect($this->syncToModels())
             ->filter()
-            ->each(function(Model $model) {
+            ->each(function (Model $model) {
                 $model
                     ->llmCall()
                     ->attach($this->llmCall->id, ['generator' => static::class]);

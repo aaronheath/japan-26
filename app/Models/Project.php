@@ -24,7 +24,7 @@ class Project extends Model
         return $this->hasMany(ProjectVersion::class);
     }
 
-    public function latestVersion(): ProjectVersion|null
+    public function latestVersion(): ?ProjectVersion
     {
         return $this->version()->orderBy('id', 'desc')->first();
     }

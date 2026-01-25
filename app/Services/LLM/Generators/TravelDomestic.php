@@ -3,12 +3,6 @@
 namespace App\Services\LLM\Generators;
 
 use App\Models\DayTravel;
-use App\Models\LlmCall;
-use Illuminate\Database\Eloquent\Model;
-use Prism\Prism\Enums\Provider;
-use Prism\Prism\Facades\Prism;
-use Prism\Prism\Text\PendingRequest;
-use Prism\Prism\Text\Response;
 
 class TravelDomestic extends BaseLlmGenerator
 {
