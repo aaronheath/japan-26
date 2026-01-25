@@ -3,6 +3,7 @@ if git diff --cached --name-only | grep -q "^\.ai/guidelines/"; then
     echo "Running boost:install..."
     herd php artisan boost:install
     git add CLAUDE.md
+    git add .junie/
 fi
 
 echo "Running phpstan..."

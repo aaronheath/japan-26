@@ -307,7 +307,7 @@ Whenever any file in the `.ai/guidelines/` directory is created or modified, the
 herd php artisan boost:install
 ```
 
-This ensures Laravel Boost recompiles the guidelines into the CLAUDE.md file. The updated CLAUDE.md is automatically staged with the commit.
+This ensures Laravel Boost recompiles the guidelines into the CLAUDE.md and `.junie/` files. These are automatically staged with the commit.
 
 === .ai/development rules ===
 
