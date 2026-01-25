@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property Carbon $start_date
+ * @property Carbon $end_date
+ */
 class Project extends Model
 {
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
@@ -19,6 +24,9 @@ class Project extends Model
         ];
     }
 
+    /**
+     * @return HasMany<ProjectVersion, $this>
+     */
     public function version(): HasMany
     {
         return $this->hasMany(ProjectVersion::class);
@@ -26,11 +34,12 @@ class Project extends Model
 
     public function latestVersion(): ?ProjectVersion
     {
+        /** @var ProjectVersion|null */
         return $this->version()->orderBy('id', 'desc')->first();
     }
 
-    public function duration()
+    public function duration(): int
     {
-        return $this->start_date->diffInDays($this->end_date);
+        return (int) $this->start_date->diffInDays($this->end_date);
     }
 }
