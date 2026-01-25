@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\ProjectVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,9 @@ class DayFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'project_version_id' => ProjectVersion::factory(),
+            'date' => fake()->date(),
+            'number' => fake()->numberBetween(1, 14),
         ];
     }
 }

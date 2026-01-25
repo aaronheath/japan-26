@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DayController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -16,6 +17,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 });
+
+Route::get('/project/{project}', [ProjectController::class, 'show'])
+    ->name('project.show');
 
 Route::get('/project/{project}/day/{day}', DayController::class)
     ->name('project.day.show');

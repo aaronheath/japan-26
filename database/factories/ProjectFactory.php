@@ -16,8 +16,13 @@ class ProjectFactory extends Factory
      */
     public function definition(): array
     {
+        $startDate = fake()->dateTimeBetween('now', '+1 month');
+        $endDate = fake()->dateTimeBetween($startDate, '+2 months');
+
         return [
-            //
+            'name' => fake()->unique()->words(3, true),
+            'start_date' => $startDate,
+            'end_date' => $endDate,
         ];
     }
 }
