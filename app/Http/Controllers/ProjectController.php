@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Enums\DayActivities;
 use App\Models\Day;
 use App\Models\Project;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
-    public function show(Project $project): View
+    public function show(Project $project): Response
     {
         $days = $project
             ->latestVersion()
@@ -19,13 +20,16 @@ class ProjectController extends Controller
             ->get()
             ->map(fn (Day $day) => $this->mapDayData($day, $project));
 
-        return view('project', [
+        return Inertia::render('project/show', [
             'project' => $project,
             'days' => $days,
-            'activityTypes' => DayActivities::cases(),
+            'activityTypes' => collect(DayActivities::cases())->map(fn ($case) => $case->value),
         ]);
     }
 
+    /**
+     * @return array{number: int, date: mixed, travel: array{hasLlmCall: bool, url: string}|null, activities: array<string, array{hasLlmCall: bool, url: string}>}
+     */
     protected function mapDayData(Day $day, Project $project): array
     {
         $activities = [];

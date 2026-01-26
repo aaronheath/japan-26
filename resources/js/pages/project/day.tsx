@@ -1,0 +1,203 @@
+import AppLayout from '@/layouts/app-layout';
+import { show as showProject } from '@/routes/project';
+import { show as showDay } from '@/routes/project/day';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+
+interface Project {
+    id: number;
+    name: string;
+}
+
+interface Day {
+    id: number;
+    number: number;
+    date: string;
+}
+
+interface City {
+    id: number;
+    name: string;
+    country_code?: string;
+}
+
+interface State {
+    id: number;
+    name: string;
+}
+
+interface CityWithState extends City {
+    state: State;
+}
+
+interface LlmCall {
+    id: number;
+    response: string;
+    created_at: string;
+}
+
+interface Travel {
+    start_city: CityWithState;
+    end_city: CityWithState;
+    llm_call: LlmCall | null;
+}
+
+interface Activity {
+    type: string;
+    city: City | null;
+    llm_call: LlmCall | null;
+}
+
+interface DayPageProps {
+    project: Project;
+    day: Day;
+    tab: string;
+    travel: Travel | Record<string, never>;
+    activities: Activity[];
+}
+
+function MarkdownContent({ content }: { content: string }) {
+    return (
+        <div
+            className="prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: content }}
+        />
+    );
+}
+
+export default function DayPage({
+    project,
+    day,
+    tab,
+    travel,
+    activities,
+}: DayPageProps) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: project.name,
+            href: showProject(project.id).url,
+        },
+        {
+            title: `Day ${day.number}`,
+            href: showDay([project.id, day.number]).url,
+        },
+    ];
+
+    const hasTravel = 'start_city' in travel;
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`${project.name} - Day ${day.number}`} />
+
+            <div className="p-4">
+                <h1 className="text-xl font-bold mb-4">Day {day.number}</h1>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-6">
+                    <Link
+                        href={`/project/${project.id}/day/${day.number}?tab=overview`}
+                        className={`underline ${
+                            tab === 'overview'
+                                ? 'text-foreground font-medium'
+                                : 'text-blue-600 dark:text-blue-400'
+                        }`}
+                    >
+                        Overview
+                    </Link>
+
+                    {hasTravel && (
+                        <Link
+                            href={`/project/${project.id}/day/${day.number}?tab=travel`}
+                            className={`underline ${
+                                tab === 'travel'
+                                    ? 'text-foreground font-medium'
+                                    : 'text-blue-600 dark:text-blue-400'
+                            }`}
+                        >
+                            Travel
+                        </Link>
+                    )}
+
+                    {activities.map((activity, i) => (
+                        <Link
+                            key={i}
+                            href={`/project/${project.id}/day/${day.number}?tab=activity-${i}`}
+                            className={`underline capitalize ${
+                                tab === `activity-${i}`
+                                    ? 'text-foreground font-medium'
+                                    : 'text-blue-600 dark:text-blue-400'
+                            }`}
+                        >
+                            {activity.type}
+                        </Link>
+                    ))}
+                </div>
+
+                <div className="space-y-4">
+                    {tab === 'overview' && (
+                        <div>
+                            <p className="text-muted-foreground">
+                                Select a tab above to view details.
+                            </p>
+                        </div>
+                    )}
+
+                    {tab === 'travel' && hasTravel && (
+                        <div className="space-y-4">
+                            <h2 className="text-lg font-bold">Travel</h2>
+                            <p>
+                                {travel.start_city.name},{' '}
+                                {travel.start_city.state.name} to{' '}
+                                {travel.end_city.name},{' '}
+                                {travel.end_city.state.name}
+                            </p>
+
+                            {travel.llm_call?.response && (
+                                <MarkdownContent
+                                    content={travel.llm_call.response}
+                                />
+                            )}
+                        </div>
+                    )}
+
+                    {tab.startsWith('activity-') && (
+                        <>
+                            {(() => {
+                                const index = parseInt(
+                                    tab.replace('activity-', ''),
+                                    10,
+                                );
+                                const activity = activities[index];
+
+                                if (!activity) {
+                                    return (
+                                        <p className="text-muted-foreground">
+                                            Activity not found.
+                                        </p>
+                                    );
+                                }
+
+                                return (
+                                    <div className="space-y-4">
+                                        <h2 className="text-lg font-bold capitalize">
+                                            {activity.type}
+                                            {activity.city &&
+                                                ` in ${activity.city.name}`}
+                                        </h2>
+
+                                        {activity.llm_call?.response && (
+                                            <MarkdownContent
+                                                content={
+                                                    activity.llm_call.response
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </>
+                    )}
+                </div>
+            </div>
+        </AppLayout>
+    );
+}

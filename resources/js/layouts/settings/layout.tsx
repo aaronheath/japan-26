@@ -6,6 +6,8 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
+import { index as usersIndex } from '@/routes/users';
+import { index as whitelistedEmailsIndex } from '@/routes/whitelisted-emails';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
@@ -29,6 +31,16 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Appearance',
         href: editAppearance(),
+        icon: null,
+    },
+    {
+        title: 'Users',
+        href: usersIndex(),
+        icon: null,
+    },
+    {
+        title: 'Whitelisted Emails',
+        href: whitelistedEmailsIndex(),
         icon: null,
     },
 ];
