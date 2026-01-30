@@ -39,8 +39,8 @@ class DayController extends Controller
         }
 
         return [
-            'start_city' => $travel->startCity,
-            'end_city' => $travel->endCity,
+            'start_city' => $travel->startCity->load('state'),
+            'end_city' => $travel->endCity->load('state'),
             'llm_call' => $travel->latestLlmCall()?->only(['id', 'response', 'created_at']),
         ];
     }
