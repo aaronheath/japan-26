@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Country;
+use App\Models\State;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,11 @@ class CityFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'country_id' => fn () => Country::factory(),
+            'state_id' => fn () => State::factory(),
+            'name' => fn () => fake()->city(),
+            'population' => fn () => fake()->numberBetween(10000, 1000000),
+            'timezone' => fn () => fake()->timezone(),
         ];
     }
 }

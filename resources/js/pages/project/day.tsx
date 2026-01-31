@@ -1,9 +1,10 @@
+import { RegenerateButton } from '@/components/regenerate-button';
 import { Markdown } from '@/components/ui/markdown';
 import AppLayout from '@/layouts/app-layout';
 import { show as showProject } from '@/routes/project';
 import { show as showDay } from '@/routes/project/day';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
 interface Project {
     id: number;
@@ -38,12 +39,14 @@ interface LlmCall {
 }
 
 interface Travel {
+    id: number;
     start_city: CityWithState;
     end_city: CityWithState;
     llm_call: LlmCall | null;
 }
 
 interface Activity {
+    id: number;
     type: string;
     city: City | null;
     llm_call: LlmCall | null;
@@ -70,6 +73,12 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
     ];
 
     const hasTravel = 'start_city' in travel;
+
+    const handleRegenerateSuccess = () => {
+        setTimeout(() => {
+            router.reload();
+        }, 3000);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -123,7 +132,19 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
 
                     {tab === 'travel' && hasTravel && (
                         <div className="space-y-4">
-                            <h2 className="text-lg font-bold">Travel</h2>
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-lg font-bold">Travel</h2>
+                                <RegenerateButton
+                                    projectId={project.id}
+                                    type="single"
+                                    itemType="travel"
+                                    itemId={travel.id}
+                                    onSuccess={handleRegenerateSuccess}
+                                >
+                                    Regenerate
+                                </RegenerateButton>
+                            </div>
+
                             <p>
                                 {travel.start_city.name}, {travel.start_city.state.name} to {travel.end_city.name},{' '}
                                 {travel.end_city.state.name}
@@ -145,10 +166,21 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
 
                                 return (
                                     <div className="space-y-4">
-                                        <h2 className="text-lg font-bold capitalize">
-                                            {activity.type}
-                                            {activity.city && ` in ${activity.city.name}`}
-                                        </h2>
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-lg font-bold capitalize">
+                                                {activity.type}
+                                                {activity.city && ` in ${activity.city.name}`}
+                                            </h2>
+                                            <RegenerateButton
+                                                projectId={project.id}
+                                                type="single"
+                                                itemType="activity"
+                                                itemId={activity.id}
+                                                onSuccess={handleRegenerateSuccess}
+                                            >
+                                                Regenerate
+                                            </RegenerateButton>
+                                        </div>
 
                                         {activity.llm_call?.response && (
                                             <Markdown content={activity.llm_call.response} />

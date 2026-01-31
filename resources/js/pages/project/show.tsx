@@ -1,7 +1,12 @@
+import { RegenerateButton } from '@/components/regenerate-button';
+import { RegenerationConfirmDialog } from '@/components/regeneration-confirm-dialog';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { show as showProject } from '@/routes/project';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 
 interface Project {
     id: number;
@@ -9,14 +14,17 @@ interface Project {
 }
 
 interface DayActivity {
+    id: number;
     hasLlmCall: boolean;
     url: string;
 }
 
 interface Day {
+    id: number;
     number: number;
     date: string;
     travel: {
+        id: number;
         hasLlmCall: boolean;
         url: string;
     } | null;
@@ -30,6 +38,13 @@ interface ProjectShowProps {
 }
 
 export default function ProjectShow({ project, days, activityTypes }: ProjectShowProps) {
+    const [confirmDialog, setConfirmDialog] = useState<{
+        open: boolean;
+        type: 'column' | 'project';
+        columnType?: string;
+        totalItems: number;
+    }>({ open: false, type: 'project', totalItems: 0 });
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: project.name,
@@ -37,12 +52,59 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
         },
     ];
 
+    const handleRegenerateSuccess = () => {
+        setTimeout(() => {
+            router.reload();
+        }, 3000);
+    };
+
+    const getColumnItemCount = (columnType: string): number => {
+        if (columnType === 'travel') {
+            return days.filter((d) => d.travel !== null).length;
+        }
+
+        return days.filter((d) => d.activities[columnType]).length;
+    };
+
+    const getTotalItemCount = (): number => {
+        let total = days.filter((d) => d.travel !== null).length;
+
+        for (const type of activityTypes) {
+            total += days.filter((d) => d.activities[type]).length;
+        }
+
+        return total;
+    };
+
+    const openColumnDialog = (columnType: string) => {
+        setConfirmDialog({
+            open: true,
+            type: 'column',
+            columnType,
+            totalItems: getColumnItemCount(columnType),
+        });
+    };
+
+    const openProjectDialog = () => {
+        setConfirmDialog({
+            open: true,
+            type: 'project',
+            totalItems: getTotalItemCount(),
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={project.name} />
 
             <div className="p-4">
-                <h1 className="mb-4 text-xl font-bold">Project Overview</h1>
+                <div className="mb-4 flex items-center justify-between">
+                    <h1 className="text-xl font-bold">Project Overview</h1>
+                    <Button variant="outline" onClick={openProjectDialog}>
+                        <RefreshCw className="size-4" />
+                        Regenerate All
+                    </Button>
+                </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
@@ -55,6 +117,7 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
                                         {type}
                                     </th>
                                 ))}
+                                <th className="px-3 py-2 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,12 +165,52 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
                                             )}
                                         </td>
                                     ))}
+                                    <td className="px-3 py-2">
+                                        <RegenerateButton
+                                            projectId={project.id}
+                                            type="day"
+                                            dayId={day.id}
+                                            variant="ghost"
+                                            size="icon"
+                                            onSuccess={handleRegenerateSuccess}
+                                        />
+                                    </td>
                                 </tr>
                             ))}
+                            <tr className="bg-muted/30">
+                                <td className="px-3 py-2 font-medium">Regenerate Column</td>
+                                <td className="px-3 py-2">
+                                    {getColumnItemCount('travel') > 0 && (
+                                        <Button variant="ghost" size="sm" onClick={() => openColumnDialog('travel')}>
+                                            <RefreshCw className="size-4" />
+                                        </Button>
+                                    )}
+                                </td>
+                                {activityTypes.map((type) => (
+                                    <td key={type} className="px-3 py-2">
+                                        {getColumnItemCount(type) > 0 && (
+                                            <Button variant="ghost" size="sm" onClick={() => openColumnDialog(type)}>
+                                                <RefreshCw className="size-4" />
+                                            </Button>
+                                        )}
+                                    </td>
+                                ))}
+                                <td className="px-3 py-2"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <RegenerationConfirmDialog
+                open={confirmDialog.open}
+                onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+                projectId={project.id}
+                type={confirmDialog.type}
+                columnType={confirmDialog.columnType}
+                totalItems={confirmDialog.totalItems}
+                onSuccess={handleRegenerateSuccess}
+            />
         </AppLayout>
     );
 }

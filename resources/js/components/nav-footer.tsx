@@ -32,11 +32,13 @@ export function NavFooter({
                                     <a href={resolveUrl(item.href)} target="_blank" rel="noopener noreferrer">
                                         {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                         <span>{item.title}</span>
+                                        {item.suffix}
                                     </a>
                                 ) : (
                                     <Link href={item.href} prefetch>
                                         {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                         <span>{item.title}</span>
+                                        {item.suffix}
                                     </Link>
                                 )}
                             </SidebarMenuButton>

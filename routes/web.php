@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WhitelistedEmailController;
+use App\Http\Controllers\Api\RegenerationController;
+use App\Http\Controllers\Api\RegenerationStatusController;
 use App\Http\Controllers\DayController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ProjectController;
@@ -31,6 +33,14 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::group(['prefix' => 'project'], function () {
         Route::get('{project}', [ProjectController::class, 'show'])->name('project.show');
         Route::get('{project}/day/{day}', DayController::class)->name('project.day.show');
+    });
+
+    Route::group(['prefix' => 'api/regeneration'], function () {
+        Route::post('project/{project}/single', [RegenerationController::class, 'single'])->name('api.regeneration.single');
+        Route::post('project/{project}/day/{day}', [RegenerationController::class, 'day'])->name('api.regeneration.day');
+        Route::post('project/{project}/column', [RegenerationController::class, 'column'])->name('api.regeneration.column');
+        Route::post('project/{project}', [RegenerationController::class, 'project'])->name('api.regeneration.project');
+        Route::get('project/{project}/status', [RegenerationStatusController::class, 'status'])->name('api.regeneration.status');
     });
 });
 

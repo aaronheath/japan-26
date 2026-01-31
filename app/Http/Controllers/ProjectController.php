@@ -28,7 +28,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * @return array{number: int, date: mixed, travel: array{hasLlmCall: bool, url: string}|null, activities: array<string, array{hasLlmCall: bool, url: string}>}
+     * @return array{id: int, number: int, date: mixed, travel: array{id: int, hasLlmCall: bool, url: string}|null, activities: array<string, array{id: int, hasLlmCall: bool, url: string}>}
      */
     protected function mapDayData(Day $day, Project $project): array
     {
@@ -36,6 +36,7 @@ class ProjectController extends Controller
 
         foreach ($day->activities as $index => $activity) {
             $activities[$activity->type->value] = [
+                'id' => $activity->id,
                 'hasLlmCall' => $activity->latestLlmCall() !== null,
                 'url' => route('project.day.show', [
                     'project' => $project,
@@ -46,9 +47,11 @@ class ProjectController extends Controller
         }
 
         return [
+            'id' => $day->id,
             'number' => $day->number,
             'date' => $day->date,
             'travel' => $day->travel ? [
+                'id' => $day->travel->id,
                 'hasLlmCall' => $day->travel->latestLlmCall() !== null,
                 'url' => route('project.day.show', [
                     'project' => $project,

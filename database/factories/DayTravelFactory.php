@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\City;
+use App\Models\Day;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,10 @@ class DayTravelFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'day_id' => fn () => Day::factory(),
+            'start_city_id' => fn () => City::factory(),
+            'end_city_id' => fn () => City::factory(),
+            'overnight' => fn () => fake()->boolean(),
         ];
     }
 }
