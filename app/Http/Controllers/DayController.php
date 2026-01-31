@@ -42,7 +42,7 @@ class DayController extends Controller
             'id' => $travel->id,
             'start_city' => $travel->startCity->load('state'),
             'end_city' => $travel->endCity->load('state'),
-            'llm_call' => $travel->latestLlmCall()?->only(['id', 'response', 'created_at']),
+            'llm_call' => $travel->latestLlmCall()?->only(['id', 'response', 'created_at', 'llm_provider_name']),
         ];
     }
 
@@ -56,7 +56,7 @@ class DayController extends Controller
                 'id' => $activity->id,
                 'type' => $activity->type,
                 'city' => $activity->useCity()?->only(['id', 'name', 'country_code']) ?? null,
-                'llm_call' => $activity->latestLlmCall()?->only(['id', 'response', 'created_at']) ?? null,
+                'llm_call' => $activity->latestLlmCall()?->only(['id', 'response', 'created_at', 'llm_provider_name']) ?? null,
             ];
         })->toArray();
     }

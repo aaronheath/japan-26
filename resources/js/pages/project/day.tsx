@@ -1,3 +1,4 @@
+import { LlmMetadata } from '@/components/llm-metadata';
 import { RegenerateButton } from '@/components/regenerate-button';
 import { Markdown } from '@/components/ui/markdown';
 import AppLayout from '@/layouts/app-layout';
@@ -36,6 +37,7 @@ interface LlmCall {
     id: number;
     response: string;
     created_at: string;
+    llm_provider_name: string;
 }
 
 interface Travel {
@@ -138,6 +140,8 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
                                 </RegenerateButton>
                             </div>
 
+                            <LlmMetadata llmCall={travel.llm_call} />
+
                             <p>
                                 {travel.start_city.name}, {travel.start_city.state.name} to {travel.end_city.name},{' '}
                                 {travel.end_city.state.name}
@@ -173,6 +177,8 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
                                                 Regenerate
                                             </RegenerateButton>
                                         </div>
+
+                                        <LlmMetadata llmCall={activity.llm_call} />
 
                                         {activity.llm_call?.response && (
                                             <Markdown content={activity.llm_call.response} />
