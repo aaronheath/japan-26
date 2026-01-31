@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\StoreUserRequest;
@@ -15,7 +15,7 @@ class UserManagementController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('settings/users', [
+        return Inertia::render('admin/users', [
             'users' => User::query()
                 ->orderBy('name')
                 ->get()

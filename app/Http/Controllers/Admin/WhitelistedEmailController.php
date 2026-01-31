@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\StoreWhitelistedEmailRequest;
@@ -13,7 +13,7 @@ class WhitelistedEmailController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('settings/whitelisted-emails', [
+        return Inertia::render('admin/whitelisted-emails', [
             'emails' => WhitelistedEmail::query()
                 ->orderBy('email')
                 ->get(),

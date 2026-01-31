@@ -21,7 +21,7 @@ class StoreUserRequest extends FormRequest
                 'required',
                 'string',
                 'lowercase',
-                'email',
+                'email:strict,spoof',
                 'max:255',
                 Rule::unique(User::class),
             ],

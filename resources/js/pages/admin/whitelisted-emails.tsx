@@ -1,12 +1,11 @@
+import WhitelistedEmailController from '@/actions/App/Http/Controllers/Admin/WhitelistedEmailController';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import WhitelistedEmailController from '@/actions/App/Http/Controllers/Settings/WhitelistedEmailController';
-import { index } from '@/routes/whitelisted-emails';
+import { index } from '@/routes/admin/whitelisted-emails';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, router } from '@inertiajs/react';
@@ -31,7 +30,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to remove this email from the whitelist?')) {
-            router.delete(`/settings/whitelisted-emails/${id}`);
+            router.delete(`/admin/whitelisted-emails/${id}`);
+        }
+    };
+
+    const clearEmailInput = () => {
+        const input = document.getElementById('email') as HTMLInputElement;
+        if (input) {
+            input.value = '';
         }
     };
 
@@ -39,8 +45,8 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Whitelisted Emails" />
 
-            <SettingsLayout>
-                <div className="space-y-6">
+            <div className="px-4 py-6">
+                <div className="mx-auto max-w-xl space-y-6">
                     <HeadingSmall
                         title="Whitelisted Emails"
                         description="Manage email addresses that can sign in with Google OAuth"
@@ -48,15 +54,7 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
 
                     <Form
                         {...WhitelistedEmailController.store.form()}
-                        options={{
-                            preserveScroll: true,
-                            onSuccess: () => {
-                                const input = document.getElementById('email') as HTMLInputElement;
-                                if (input) {
-                                    input.value = '';
-                                }
-                            },
-                        }}
+                        options={{ preserveScroll: true, onSuccess: clearEmailInput }}
                         className="space-y-4"
                     >
                         {({ processing, recentlySuccessful, errors }) => (
@@ -97,11 +95,11 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Current whitelist</h4>
                         {emails.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                                 No emails have been whitelisted yet.
                             </p>
                         ) : (
-                            <ul className="divide-y divide-border rounded-md border">
+                            <ul className="divide-border divide-y rounded-md border">
                                 {emails.map((email) => (
                                     <li
                                         key={email.id}
@@ -122,7 +120,7 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
                         )}
                     </div>
                 </div>
-            </SettingsLayout>
+            </div>
         </AppLayout>
     );
 }

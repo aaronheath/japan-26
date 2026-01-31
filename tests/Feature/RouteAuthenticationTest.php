@@ -55,14 +55,14 @@ test('settings two factor requires authentication', function () {
     $response->assertRedirect(route('login'));
 });
 
-test('settings users requires authentication', function () {
-    $response = $this->get(route('users.index'));
+test('admin users requires authentication', function () {
+    $response = $this->get(route('admin.users.index'));
 
     $response->assertRedirect(route('login'));
 });
 
-test('settings whitelisted emails requires authentication', function () {
-    $response = $this->get(route('whitelisted-emails.index'));
+test('admin whitelisted emails requires authentication', function () {
+    $response = $this->get(route('admin.whitelisted-emails.index'));
 
     $response->assertRedirect(route('login'));
 });

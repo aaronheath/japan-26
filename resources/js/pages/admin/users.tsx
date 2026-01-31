@@ -1,4 +1,4 @@
-import UserManagementController from '@/actions/App/Http/Controllers/Settings/UserManagementController';
+import UserManagementController from '@/actions/App/Http/Controllers/Admin/UserManagementController';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -13,8 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import { index } from '@/routes/users';
+import { index } from '@/routes/admin/users';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, router, usePage } from '@inertiajs/react';
@@ -46,9 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Users({ users }: UsersProps) {
     const { auth } = usePage<SharedData & { flash: FlashData }>().props;
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [generatedPassword, setGeneratedPassword] = useState<string | null>(
-        null,
-    );
+    const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [copyFailed, setCopyFailed] = useState(false);
     const [authType, setAuthType] = useState<'password' | 'google'>('password');
@@ -59,7 +56,7 @@ export default function Users({ users }: UsersProps) {
             return;
         }
         if (confirm('Are you sure you want to delete this user?')) {
-            router.delete(`/settings/users/${userId}`);
+            router.delete(`/admin/users/${userId}`);
         }
     };
 
@@ -99,12 +96,24 @@ export default function Users({ users }: UsersProps) {
         }
     };
 
+    const handleFormSuccess = (page: { props: { flash?: FlashData } }) => {
+        const input = document.getElementById('email') as HTMLInputElement;
+        if (input) {
+            input.value = '';
+        }
+        const flashData = page.props.flash;
+        if (flashData?.generated_password) {
+            setGeneratedPassword(flashData.generated_password);
+            setShowPasswordModal(true);
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="User Management" />
 
-            <SettingsLayout>
-                <div className="space-y-6">
+            <div className="px-4 py-6">
+                <div className="mx-auto max-w-xl space-y-6">
                     <HeadingSmall
                         title="User Management"
                         description="Create and manage user accounts"
@@ -112,26 +121,7 @@ export default function Users({ users }: UsersProps) {
 
                     <Form
                         {...UserManagementController.store.form()}
-                        options={{
-                            preserveScroll: true,
-                            onSuccess: (page) => {
-                                const input = document.getElementById(
-                                    'email',
-                                ) as HTMLInputElement;
-                                if (input) {
-                                    input.value = '';
-                                }
-                                const flashData = page.props.flash as
-                                    | FlashData
-                                    | undefined;
-                                if (flashData?.generated_password) {
-                                    setGeneratedPassword(
-                                        flashData.generated_password,
-                                    );
-                                    setShowPasswordModal(true);
-                                }
-                            },
-                        }}
+                        options={{ preserveScroll: true, onSuccess: handleFormSuccess }}
                         className="space-y-4"
                     >
                         {({ processing, recentlySuccessful, errors }) => (
@@ -156,17 +146,11 @@ export default function Users({ users }: UsersProps) {
                                                 type="radio"
                                                 name="auth_type"
                                                 value="password"
-                                                checked={
-                                                    authType === 'password'
-                                                }
-                                                onChange={() =>
-                                                    setAuthType('password')
-                                                }
+                                                checked={authType === 'password'}
+                                                onChange={() => setAuthType('password')}
                                                 className="h-4 w-4"
                                             />
-                                            <span className="text-sm">
-                                                Password
-                                            </span>
+                                            <span className="text-sm">Password</span>
                                         </label>
                                         <label className="flex items-center gap-2">
                                             <input
@@ -174,17 +158,13 @@ export default function Users({ users }: UsersProps) {
                                                 name="auth_type"
                                                 value="google"
                                                 checked={authType === 'google'}
-                                                onChange={() =>
-                                                    setAuthType('google')
-                                                }
+                                                onChange={() => setAuthType('google')}
                                                 className="h-4 w-4"
                                             />
-                                            <span className="text-sm">
-                                                Google
-                                            </span>
+                                            <span className="text-sm">Google</span>
                                         </label>
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-muted-foreground text-xs">
                                         {authType === 'password'
                                             ? 'A random password will be generated and displayed once.'
                                             : 'User will sign in via Google OAuth. Email will be auto-whitelisted.'}
@@ -197,9 +177,7 @@ export default function Users({ users }: UsersProps) {
                                 </Button>
 
                                 <Transition
-                                    show={
-                                        recentlySuccessful && !showPasswordModal
-                                    }
+                                    show={recentlySuccessful && !showPasswordModal}
                                     enter="transition ease-in-out"
                                     enterFrom="opacity-0"
                                     leave="transition ease-in-out"
@@ -216,11 +194,11 @@ export default function Users({ users }: UsersProps) {
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Current users</h4>
                         {users.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                                 No users have been created yet.
                             </p>
                         ) : (
-                            <ul className="divide-y divide-border rounded-md border">
+                            <ul className="divide-border divide-y rounded-md border">
                                 {users.map((user) => (
                                     <li
                                         key={user.id}
@@ -233,8 +211,7 @@ export default function Users({ users }: UsersProps) {
                                                 </span>
                                                 <Badge
                                                     variant={
-                                                        user.auth_type ===
-                                                        'google'
+                                                        user.auth_type === 'google'
                                                             ? 'secondary'
                                                             : 'outline'
                                                     }
@@ -245,16 +222,14 @@ export default function Users({ users }: UsersProps) {
                                                         : 'Password'}
                                                 </Badge>
                                             </div>
-                                            <span className="text-xs text-muted-foreground">
+                                            <span className="text-muted-foreground text-xs">
                                                 {user.email}
                                             </span>
                                         </div>
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() =>
-                                                handleDelete(user.id)
-                                            }
+                                            onClick={() => handleDelete(user.id)}
                                             disabled={user.id === auth.user.id}
                                             className="text-destructive hover:text-destructive disabled:opacity-50"
                                         >
@@ -266,12 +241,9 @@ export default function Users({ users }: UsersProps) {
                         )}
                     </div>
                 </div>
-            </SettingsLayout>
+            </div>
 
-            <Dialog
-                open={showPasswordModal}
-                onOpenChange={setShowPasswordModal}
-            >
+            <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>User Created</DialogTitle>
@@ -287,29 +259,21 @@ export default function Users({ users }: UsersProps) {
                                 className="flex-1 font-mono text-sm"
                                 onFocus={(e) => e.target.select()}
                             />
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleCopy}
-                            >
+                            <Button variant="outline" size="sm" onClick={handleCopy}>
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </div>
                         {copied && (
-                            <p className="text-sm text-green-600">
-                                Copied to clipboard!
-                            </p>
+                            <p className="text-sm text-green-600">Copied to clipboard!</p>
                         )}
                         {copyFailed && (
                             <p className="text-sm text-amber-600">
-                                Auto-copy unavailable on HTTP. Please select the
-                                password above and copy manually (Cmd+C /
-                                Ctrl+C).
+                                Auto-copy unavailable on HTTP. Please select the password
+                                above and copy manually (Cmd+C / Ctrl+C).
                             </p>
                         )}
-                        <p className="text-sm text-destructive">
-                            This password will not be shown again. Please save
-                            it securely.
+                        <p className="text-destructive text-sm">
+                            This password will not be shown again. Please save it securely.
                         </p>
                     </div>
                 </DialogContent>

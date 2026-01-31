@@ -18,6 +18,30 @@ We use [PHPStan](https://phpstan.org/) for static analysis of our PHP code to ca
 
 Factory definitions values should always be closures. This ensures that values are not generated unless they are needed.
 
+### Models
+
+All models shall be unguarded. Where the AppServiceProvider doesn't already have `Model::unguard();` added to the boot method, add it.
+
 ### If Else Statements
 
 As a general rule the use of `if else` statements are discouraged when an early return can be used or when code can be abstract the logical `private` or `protected` methods on the same class is preferred.
+
+### Validation
+
+#### Emails
+
+When validating email addresses please use the `email` validation rule with `strict` and `spoof` validation styles.
+
+```php
+$rules => [
+    'email' => 'email:strict,spoof'
+];
+```
+
+## React / Typescript
+
+### Element attribute function values
+
+Where the logic of an element attribute is complex or more than 3 lines, it should be extracted into a separate function.
+
+Keep functions on a single line when possible.

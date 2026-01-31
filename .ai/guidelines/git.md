@@ -29,3 +29,7 @@ PRs should include:
 You must never commit directly to the `main` branch. 
 
 Development must always be committed to a new branch of work that is not `main`.
+
+## Commit Files
+
+Include all changed files including ones your didnt change in the commit.

@@ -25,9 +25,13 @@ export function UserInfo({
             <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="flex items-center gap-2 truncate font-medium">
                     {user.name}
-                    {auth.auth_method === 'google' && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {auth.auth_method === 'google' ? (
+                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
                             Google
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                            Password
                         </Badge>
                     )}
                 </span>

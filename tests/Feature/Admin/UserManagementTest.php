@@ -4,7 +4,7 @@ use App\Models\User;
 use App\Models\WhitelistedEmail;
 
 test('user management page requires authentication', function () {
-    $response = $this->get(route('users.index'));
+    $response = $this->get(route('admin.users.index'));
 
     $response->assertRedirect(route('login'));
 });
@@ -13,7 +13,7 @@ test('user management page renders with user list', function () {
     $user = User::factory()->create();
     User::factory()->count(2)->create();
 
-    $response = $this->actingAs($user)->get(route('users.index'));
+    $response = $this->actingAs($user)->get(route('admin.users.index'));
 
     $response->assertOk();
 });
@@ -21,7 +21,7 @@ test('user management page renders with user list', function () {
 test('can create password user and returns generated password', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('users.store'), [
+    $response = $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'newpassworduser@example.com',
         'auth_type' => 'password',
     ]);
@@ -38,7 +38,7 @@ test('can create password user and returns generated password', function () {
 test('password user password is hashed', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('users.store'), [
+    $response = $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'hashtest@example.com',
         'auth_type' => 'password',
     ]);
@@ -52,7 +52,7 @@ test('password user password is hashed', function () {
 test('can create google user with null password', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('users.store'), [
+    $response = $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'newgoogleuser@example.com',
         'auth_type' => 'google',
     ]);
@@ -68,7 +68,7 @@ test('can create google user with null password', function () {
 test('creating google user auto-whitelists email', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->post(route('users.store'), [
+    $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'autowhitelist@example.com',
         'auth_type' => 'google',
     ]);
@@ -80,7 +80,7 @@ test('creating google user does not duplicate whitelist entry', function () {
     $user = User::factory()->create();
     WhitelistedEmail::factory()->create(['email' => 'alreadywhitelisted@example.com']);
 
-    $this->actingAs($user)->post(route('users.store'), [
+    $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'alreadywhitelisted@example.com',
         'auth_type' => 'google',
     ]);
@@ -92,7 +92,7 @@ test('duplicate email is rejected', function () {
     $user = User::factory()->create();
     User::factory()->create(['email' => 'existing@example.com']);
 
-    $response = $this->actingAs($user)->post(route('users.store'), [
+    $response = $this->actingAs($user)->post(route('admin.users.store'), [
         'email' => 'existing@example.com',
         'auth_type' => 'password',
     ]);
@@ -104,7 +104,7 @@ test('can delete user', function () {
     $user = User::factory()->create();
     $userToDelete = User::factory()->create();
 
-    $response = $this->actingAs($user)->delete(route('users.destroy', $userToDelete));
+    $response = $this->actingAs($user)->delete(route('admin.users.destroy', $userToDelete));
 
     $response->assertRedirect();
     expect(User::find($userToDelete->id))->toBeNull();
@@ -113,7 +113,7 @@ test('can delete user', function () {
 test('cannot delete own account', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->delete(route('users.destroy', $user));
+    $response = $this->actingAs($user)->delete(route('admin.users.destroy', $user));
 
     $response->assertSessionHasErrors('user');
     expect(User::find($user->id))->not->toBeNull();
