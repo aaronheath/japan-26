@@ -11,7 +11,6 @@ interface RegenerateButtonProps {
     itemId?: number;
     dayId?: number;
     columnType?: string;
-    onSuccess?: () => void;
     variant?: 'default' | 'ghost' | 'outline' | 'secondary' | 'destructive' | 'link';
     size?: 'default' | 'sm' | 'lg' | 'icon';
     children?: React.ReactNode;
@@ -24,7 +23,6 @@ export function RegenerateButton({
     itemId,
     dayId,
     columnType,
-    onSuccess,
     variant = 'outline',
     size = 'sm',
     children,
@@ -71,8 +69,6 @@ export function RegenerateButton({
             toast.success('Regeneration started', {
                 description: `Processing ${data.total_jobs} job${data.total_jobs > 1 ? 's' : ''}`,
             });
-
-            onSuccess?.();
         } catch {
             toast.error('Failed to start regeneration');
         } finally {

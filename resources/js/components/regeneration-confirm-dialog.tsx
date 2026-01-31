@@ -19,7 +19,6 @@ interface RegenerationConfirmDialogProps {
     type: 'column' | 'project';
     columnType?: string;
     totalItems: number;
-    onSuccess?: () => void;
 }
 
 export function RegenerationConfirmDialog({
@@ -29,7 +28,6 @@ export function RegenerationConfirmDialog({
     type,
     columnType,
     totalItems,
-    onSuccess,
 }: RegenerationConfirmDialogProps) {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -81,7 +79,6 @@ export function RegenerationConfirmDialog({
             });
 
             onOpenChange(false);
-            onSuccess?.();
         } catch {
             toast.error('Failed to start regeneration');
         } finally {

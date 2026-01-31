@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { show as showProject } from '@/routes/project';
 import { show as showDay } from '@/routes/project/day';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 interface Project {
     id: number;
@@ -74,12 +74,6 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
 
     const hasTravel = 'start_city' in travel;
 
-    const handleRegenerateSuccess = () => {
-        setTimeout(() => {
-            router.reload();
-        }, 3000);
-    };
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${project.name} - Day ${day.number}`} />
@@ -139,7 +133,6 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
                                     type="single"
                                     itemType="travel"
                                     itemId={travel.id}
-                                    onSuccess={handleRegenerateSuccess}
                                 >
                                     Regenerate
                                 </RegenerateButton>
@@ -176,7 +169,6 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
                                                 type="single"
                                                 itemType="activity"
                                                 itemId={activity.id}
-                                                onSuccess={handleRegenerateSuccess}
                                             >
                                                 Regenerate
                                             </RegenerateButton>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\RegenerationColumnType;
+use App\Enums\RegenerationItemType;
 use App\Http\Controllers\Controller;
 use App\Models\Day;
 use App\Models\DayActivity;
@@ -10,6 +12,7 @@ use App\Models\Project;
 use App\Services\LLM\RegenerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RegenerationController extends Controller
 {
@@ -20,14 +23,14 @@ class RegenerationController extends Controller
     public function single(Request $request, Project $project): JsonResponse
     {
         $request->validate([
-            'type' => ['required', 'string', 'in:travel,activity'],
+            'type' => ['required', 'string', Rule::enum(RegenerationItemType::class)],
             'id' => ['required', 'integer'],
         ]);
 
-        $type = $request->input('type');
+        $type = RegenerationItemType::from($request->input('type'));
         $id = $request->input('id');
 
-        if ($type === 'travel') {
+        if ($type === RegenerationItemType::Travel) {
             $travel = DayTravel::findOrFail($id);
             $batch = $this->regenerationService->regenerateSingleTravel($project, $travel);
         } else {
@@ -56,10 +59,10 @@ class RegenerationController extends Controller
     public function column(Request $request, Project $project): JsonResponse
     {
         $request->validate([
-            'type' => ['required', 'string', 'in:travel,sightseeing,wrestling,eating'],
+            'type' => ['required', 'string', Rule::enum(RegenerationColumnType::class)],
         ]);
 
-        $type = $request->input('type');
+        $type = RegenerationColumnType::from($request->input('type'));
         $batch = $this->regenerationService->regenerateColumn($project, $type);
 
         return response()->json([

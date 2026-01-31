@@ -3,6 +3,7 @@
 namespace App\Services\LLM;
 
 use App\Enums\DayActivities;
+use App\Enums\RegenerationColumnType;
 use App\Jobs\RegenerateLlmContent;
 use App\Models\Day;
 use App\Models\DayActivity;
@@ -18,85 +19,50 @@ class RegenerationService
 {
     public function regenerateSingleTravel(Project $project, DayTravel $travel): LlmRegenerationBatch
     {
-        $batch = LlmRegenerationBatch::create([
-            'project_id' => $project->id,
-            'scope' => 'single',
-            'generator_type' => 'travel',
-            'total_jobs' => 1,
-            'status' => 'pending',
-        ]);
+        $jobs = [$this->createTravelJob($travel)];
 
-        $generatorClass = $this->getTravelGeneratorClass($travel);
-
-        $laravelBatch = Bus::batch([
-            new RegenerateLlmContent(DayTravel::class, $travel->id, $generatorClass),
-        ])
-            ->then(fn () => $batch->markAsCompleted())
-            ->catch(fn () => $batch->markAsFailed())
-            ->finally(fn () => $batch->refresh())
-            ->name("Regenerate Travel #{$travel->id}")
-            ->dispatch();
-
-        $batch->update([
-            'batch_id' => $laravelBatch->id,
-            'status' => 'processing',
-            'started_at' => now(),
-        ]);
-
-        return $batch;
+        return $this->dispatchBatch($project, 'single', 'travel', $jobs, "Regenerate Travel #{$travel->id}");
     }
 
     public function regenerateSingleActivity(Project $project, DayActivity $activity): LlmRegenerationBatch
     {
-        $batch = LlmRegenerationBatch::create([
-            'project_id' => $project->id,
-            'scope' => 'single',
-            'generator_type' => $activity->type->value,
-            'total_jobs' => 1,
-            'status' => 'pending',
-        ]);
+        $jobs = [$this->createActivityJob($activity)];
 
-        $generatorClass = $this->getActivityGeneratorClass($activity);
-
-        $laravelBatch = Bus::batch([
-            new RegenerateLlmContent(DayActivity::class, $activity->id, $generatorClass),
-        ])
-            ->then(fn () => $batch->markAsCompleted())
-            ->catch(fn () => $batch->markAsFailed())
-            ->finally(fn () => $batch->refresh())
-            ->name("Regenerate Activity #{$activity->id}")
-            ->dispatch();
-
-        $batch->update([
-            'batch_id' => $laravelBatch->id,
-            'status' => 'processing',
-            'started_at' => now(),
-        ]);
-
-        return $batch;
+        return $this->dispatchBatch($project, 'single', $activity->type->value, $jobs, "Regenerate Activity #{$activity->id}");
     }
 
     public function regenerateDay(Project $project, Day $day): LlmRegenerationBatch
     {
-        $jobs = [];
+        $jobs = $this->collectJobsForDay($day);
 
-        if ($day->travel) {
-            $generatorClass = $this->getTravelGeneratorClass($day->travel);
-            $jobs[] = new RegenerateLlmContent(DayTravel::class, $day->travel->id, $generatorClass);
-        }
+        return $this->dispatchBatch($project, 'day', null, $jobs, "Regenerate Day #{$day->number}");
+    }
 
-        foreach ($day->activities as $activity) {
-            $generatorClass = $this->getActivityGeneratorClass($activity);
-            $jobs[] = new RegenerateLlmContent(DayActivity::class, $activity->id, $generatorClass);
-        }
+    public function regenerateColumn(Project $project, RegenerationColumnType $type): LlmRegenerationBatch
+    {
+        $jobs = $this->collectJobsForColumn($project, $type);
 
-        $batch = LlmRegenerationBatch::create([
-            'project_id' => $project->id,
-            'scope' => 'day',
-            'generator_type' => null,
-            'total_jobs' => count($jobs),
-            'status' => 'pending',
-        ]);
+        return $this->dispatchBatch($project, 'column', $type->value, $jobs, "Regenerate Column: {$type->value}");
+    }
+
+    public function regenerateProject(Project $project): LlmRegenerationBatch
+    {
+        $jobs = $this->collectJobsForProject($project);
+
+        return $this->dispatchBatch($project, 'project', null, $jobs, "Regenerate Project: {$project->name}");
+    }
+
+    /**
+     * @param  array<RegenerateLlmContent>  $jobs
+     */
+    protected function dispatchBatch(
+        Project $project,
+        string $scope,
+        ?string $generatorType,
+        array $jobs,
+        string $batchName,
+    ): LlmRegenerationBatch {
+        $batch = $this->createBatchRecord($project, $scope, $generatorType, count($jobs));
 
         if (empty($jobs)) {
             $batch->markAsCompleted();
@@ -108,7 +74,7 @@ class RegenerationService
             ->then(fn () => $batch->markAsCompleted())
             ->catch(fn () => $batch->markAsFailed())
             ->finally(fn () => $batch->refresh())
-            ->name("Regenerate Day #{$day->number}")
+            ->name($batchName)
             ->dispatch();
 
         $batch->update([
@@ -120,109 +86,104 @@ class RegenerationService
         return $batch;
     }
 
-    public function regenerateColumn(Project $project, string $type): LlmRegenerationBatch
+    protected function createBatchRecord(
+        Project $project,
+        string $scope,
+        ?string $generatorType,
+        int $totalJobs,
+    ): LlmRegenerationBatch {
+        return LlmRegenerationBatch::create([
+            'project_id' => $project->id,
+            'scope' => $scope,
+            'generator_type' => $generatorType,
+            'total_jobs' => $totalJobs,
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * @return array<RegenerateLlmContent>
+     */
+    protected function collectJobsForDay(Day $day): array
+    {
+        $jobs = [];
+
+        if ($day->travel) {
+            $jobs[] = $this->createTravelJob($day->travel);
+        }
+
+        foreach ($day->activities as $activity) {
+            $jobs[] = $this->createActivityJob($activity);
+        }
+
+        return $jobs;
+    }
+
+    /**
+     * @return array<RegenerateLlmContent>
+     */
+    protected function collectJobsForColumn(Project $project, RegenerationColumnType $type): array
     {
         $jobs = [];
         $version = $project->latestVersion();
 
-        if ($type === 'travel') {
+        if ($type === RegenerationColumnType::Travel) {
             $travels = DayTravel::query()
                 ->whereHas('day', fn ($q) => $q->where('project_version_id', $version->id))
                 ->get();
 
             foreach ($travels as $travel) {
-                $generatorClass = $this->getTravelGeneratorClass($travel);
-                $jobs[] = new RegenerateLlmContent(DayTravel::class, $travel->id, $generatorClass);
+                $jobs[] = $this->createTravelJob($travel);
             }
-        } else {
-            $activityType = DayActivities::from($type);
-            $activities = DayActivity::query()
-                ->whereHas('day', fn ($q) => $q->where('project_version_id', $version->id))
-                ->where('type', $activityType)
-                ->get();
 
-            foreach ($activities as $activity) {
-                $generatorClass = $this->getActivityGeneratorClass($activity);
-                $jobs[] = new RegenerateLlmContent(DayActivity::class, $activity->id, $generatorClass);
-            }
+            return $jobs;
         }
 
-        $batch = LlmRegenerationBatch::create([
-            'project_id' => $project->id,
-            'scope' => 'column',
-            'generator_type' => $type,
-            'total_jobs' => count($jobs),
-            'status' => 'pending',
-        ]);
+        $activityType = DayActivities::from($type->value);
+        $activities = DayActivity::query()
+            ->whereHas('day', fn ($q) => $q->where('project_version_id', $version->id))
+            ->where('type', $activityType)
+            ->get();
 
-        if (empty($jobs)) {
-            $batch->markAsCompleted();
-
-            return $batch;
+        foreach ($activities as $activity) {
+            $jobs[] = $this->createActivityJob($activity);
         }
 
-        $laravelBatch = Bus::batch($jobs)
-            ->then(fn () => $batch->markAsCompleted())
-            ->catch(fn () => $batch->markAsFailed())
-            ->finally(fn () => $batch->refresh())
-            ->name("Regenerate Column: {$type}")
-            ->dispatch();
-
-        $batch->update([
-            'batch_id' => $laravelBatch->id,
-            'status' => 'processing',
-            'started_at' => now(),
-        ]);
-
-        return $batch;
+        return $jobs;
     }
 
-    public function regenerateProject(Project $project): LlmRegenerationBatch
+    /**
+     * @return array<RegenerateLlmContent>
+     */
+    protected function collectJobsForProject(Project $project): array
     {
         $jobs = [];
         $version = $project->latestVersion();
         $days = $version->days()->with(['travel', 'activities'])->get();
 
         foreach ($days as $day) {
-            if ($day->travel) {
-                $generatorClass = $this->getTravelGeneratorClass($day->travel);
-                $jobs[] = new RegenerateLlmContent(DayTravel::class, $day->travel->id, $generatorClass);
-            }
-
-            foreach ($day->activities as $activity) {
-                $generatorClass = $this->getActivityGeneratorClass($activity);
-                $jobs[] = new RegenerateLlmContent(DayActivity::class, $activity->id, $generatorClass);
-            }
+            $jobs = array_merge($jobs, $this->collectJobsForDay($day));
         }
 
-        $batch = LlmRegenerationBatch::create([
-            'project_id' => $project->id,
-            'scope' => 'project',
-            'generator_type' => null,
-            'total_jobs' => count($jobs),
-            'status' => 'pending',
-        ]);
+        return $jobs;
+    }
 
-        if (empty($jobs)) {
-            $batch->markAsCompleted();
+    protected function createTravelJob(DayTravel $travel): RegenerateLlmContent
+    {
+        return new RegenerateLlmContent(
+            DayTravel::class,
+            $travel->id,
+            $this->getTravelGeneratorClass($travel),
+        );
+    }
 
-            return $batch;
-        }
-
-        $laravelBatch = Bus::batch($jobs)
-            ->then(fn () => $batch->markAsCompleted())
-            ->catch(fn () => $batch->markAsFailed())
-            ->finally(fn () => $batch->refresh())
-            ->name("Regenerate Project: {$project->name}")
-            ->dispatch();
-
-        $batch->update([
-            'batch_id' => $laravelBatch->id,
-            'status' => 'processing',
-            'started_at' => now(),
-        ]);
-
-        return $batch;
+    protected function createActivityJob(DayActivity $activity): RegenerateLlmContent
+    {
+        return new RegenerateLlmContent(
+            DayActivity::class,
+            $activity->id,
+            $this->getActivityGeneratorClass($activity),
+        );
     }
 
     /**

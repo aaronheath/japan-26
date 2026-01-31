@@ -18,7 +18,8 @@
             "mcp__laravel-boost__search-docs",
             "mcp__laravel-boost__tinker",
             "Bash(vendor/bin/pint:*)",
-            "Bash(vendor/bin/phpstan:*)"
+            "Bash(vendor/bin/phpstan:*)",
+            "Bash(./vendor/bin/phpstan analyse:*)"
         ]
     },
     "enableAllProjectMcpServers": true,

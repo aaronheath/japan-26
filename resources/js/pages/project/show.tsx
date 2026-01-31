@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { show as showProject } from '@/routes/project';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
@@ -51,12 +51,6 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
             href: showProject(project.id).url,
         },
     ];
-
-    const handleRegenerateSuccess = () => {
-        setTimeout(() => {
-            router.reload();
-        }, 3000);
-    };
 
     const getColumnItemCount = (columnType: string): number => {
         if (columnType === 'travel') {
@@ -172,7 +166,6 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
                                             dayId={day.id}
                                             variant="ghost"
                                             size="icon"
-                                            onSuccess={handleRegenerateSuccess}
                                         />
                                     </td>
                                 </tr>
@@ -209,7 +202,6 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
                 type={confirmDialog.type}
                 columnType={confirmDialog.columnType}
                 totalItems={confirmDialog.totalItems}
-                onSuccess={handleRegenerateSuccess}
             />
         </AppLayout>
     );

@@ -80,6 +80,14 @@ class LlmRegenerationBatch extends Model
         ]);
     }
 
+    public function markAsTimedOut(): void
+    {
+        $this->update([
+            'status' => 'timed_out',
+            'completed_at' => now(),
+        ]);
+    }
+
     public function incrementCompleted(): void
     {
         $this->increment('completed_jobs');
