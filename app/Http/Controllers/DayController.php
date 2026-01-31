@@ -28,7 +28,7 @@ class DayController extends Controller
     }
 
     /**
-     * @return array{start_city: mixed, end_city: mixed, llm_call: array<string, mixed>|null}|array{}
+     * @return array{id: int, start_city: mixed, end_city: mixed, llm_call: array<string, mixed>|null}|array{}
      */
     protected function travel(): array
     {
@@ -39,6 +39,7 @@ class DayController extends Controller
         }
 
         return [
+            'id' => $travel->id,
             'start_city' => $travel->startCity->load('state'),
             'end_city' => $travel->endCity->load('state'),
             'llm_call' => $travel->latestLlmCall()?->only(['id', 'response', 'created_at']),
@@ -52,6 +53,7 @@ class DayController extends Controller
     {
         return $this->day->activities()->get()->map(function (DayActivity $activity) {
             return [
+                'id' => $activity->id,
                 'type' => $activity->type,
                 'city' => $activity->useCity()?->only(['id', 'name', 'country_code']) ?? null,
                 'llm_call' => $activity->latestLlmCall()?->only(['id', 'response', 'created_at']) ?? null,

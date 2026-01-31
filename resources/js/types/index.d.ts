@@ -17,6 +17,7 @@ export interface NavItem {
     icon?: LucideIcon | null;
     isActive?: boolean;
     external?: boolean;
+    suffix?: React.ReactNode;
 }
 
 export interface SharedData {

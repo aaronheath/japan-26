@@ -259,10 +259,21 @@ $rules => [
     'email' => 'email:strict,spoof'
 ];
 ```
+#### Enums
+
+Instead of using the `in` validation rule, use the `enum` rule where possible. Where the array of values is static there is a natural ability to use the `enum` rule. If a suitable enum class doesn't exist, create one.
 
 ### Route Files
 
 Use `Route::group()` to group routes together whenever possible. Use nested `Route::group()` when necessary up to a depth of 3.
+
+### Don't Repeat Yourself
+
+Follow DRY principles. 
+
+When common code is present in a single class, always look for interoperates to abstract logic into `protected` or `private` methods.
+
+When there is reasonable chunks of common / reusable code between classes, consider whether abstraction into a service or action class or a trait. 
 
 ## React / Typescript
 
@@ -404,6 +415,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - inertiajs/inertia-laravel (INERTIA) - v2
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
+- laravel/horizon (HORIZON) - v5
 - laravel/prompts (PROMPTS) - v0
 - laravel/socialite (SOCIALITE) - v5
 - laravel/wayfinder (WAYFINDER) - v0
