@@ -31,37 +31,48 @@ class UserManagementController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $generatedPassword = null;
 
         if ($validated['auth_type'] === 'google') {
-            $user = User::create([
-                'name' => Str::before($validated['email'], '@'),
-                'email' => strtolower($validated['email']),
-                'password' => null,
-                'email_verified_at' => now(),
-            ]);
+            $this->createGoogleUser($validated);
 
-            if (! WhitelistedEmail::isWhitelisted($validated['email'])) {
-                WhitelistedEmail::create([
-                    'email' => strtolower($validated['email']),
-                ]);
-            }
-        } else {
-            $generatedPassword = Str::random(16);
+            return back();
+        }
 
-            User::create([
-                'name' => Str::before($validated['email'], '@'),
+        $generatedPassword = $this->createPasswordUser($validated);
+
+        return back()->with('generated_password', $generatedPassword);
+    }
+
+    private function createGoogleUser(array $validated): User
+    {
+        $user = User::create([
+            'name' => Str::before($validated['email'], '@'),
+            'email' => strtolower($validated['email']),
+            'password' => null,
+            'email_verified_at' => now(),
+        ]);
+
+        if (! WhitelistedEmail::isWhitelisted($validated['email'])) {
+            WhitelistedEmail::create([
                 'email' => strtolower($validated['email']),
-                'password' => $generatedPassword,
-                'email_verified_at' => now(),
             ]);
         }
 
-        if ($generatedPassword) {
-            return back()->with('generated_password', $generatedPassword);
-        }
+        return $user;
+    }
 
-        return back();
+    private function createPasswordUser(array $validated): string
+    {
+        $generatedPassword = Str::random(16);
+
+        User::create([
+            'name' => Str::before($validated['email'], '@'),
+            'email' => strtolower($validated['email']),
+            'password' => $generatedPassword,
+            'email_verified_at' => now(),
+        ]);
+
+        return $generatedPassword;
     }
 
     public function destroy(User $user): RedirectResponse

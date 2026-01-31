@@ -31,11 +31,7 @@ class GoogleAuthController extends Controller
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
-        if ($user) {
-            if (! $user->google_id) {
-                $user->update(['google_id' => $googleUser->getId()]);
-            }
-        } else {
+        if (! $user) {
             $user = User::create([
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
@@ -43,6 +39,10 @@ class GoogleAuthController extends Controller
                 'password' => null,
                 'email_verified_at' => now(),
             ]);
+        }
+
+        if (! $user->google_id) {
+            $user->update(['google_id' => $googleUser->getId()]);
         }
 
         Auth::login($user, remember: true);

@@ -240,6 +240,16 @@ We use [PHPStan](https://phpstan.org/) for static analysis of our PHP code to ca
 
 Factory definitions values should always be closures. This ensures that values are not generated unless they are needed.
 
+### If Else Statements
+
+As a general rule the use of `if else` statements are discouraged when an early return can be used or when code can be abstract the logical `private` or `protected` methods on the same class is preferred.
+
+### Validation
+
+#### Emails
+
+When validating email addresses please use the `email` validation rule with `strict` and `spoof` validation styles.
+
 === .ai/git rules ===
 
 # Git Guidelines
@@ -337,6 +347,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
+- laravel/socialite (SOCIALITE) - v5
 - laravel/wayfinder (WAYFINDER) - v0
 - larastan/larastan (LARASTAN) - v3
 - laravel/mcp (MCP) - v0
