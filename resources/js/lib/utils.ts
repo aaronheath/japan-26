@@ -31,3 +31,26 @@ export function getApiHeaders(): HeadersInit {
         'X-XSRF-TOKEN': getCsrfToken(),
     };
 }
+
+export function formatLocalDateTime(utcTimestamp: string): string {
+    const date = new Date(utcTimestamp);
+
+    if (isNaN(date.getTime())) {
+        return 'Unknown date';
+    }
+
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: '2-digit',
+    });
+
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    });
+
+    return `${dateFormatter.format(date)} at ${timeFormatter.format(date)}`;
+}
