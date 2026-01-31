@@ -41,22 +41,12 @@ function GoogleIcon({ className }: { className?: string }) {
     );
 }
 
-export default function Login({
-    status,
-    canResetPassword,
-}: LoginProps) {
+export default function Login({ status, canResetPassword }: LoginProps) {
     return (
-        <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
-        >
+        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
             <Head title="Log in" />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
+            <Form {...store.form()} resetOnSuccess={['password']} className="flex flex-col gap-6">
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
@@ -79,11 +69,7 @@ export default function Login({
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
+                                        <TextLink href={request()} className="ml-auto text-sm" tabIndex={5}>
                                             Forgot password?
                                         </TextLink>
                                     )}
@@ -101,11 +87,7 @@ export default function Login({
                             </div>
 
                             <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
+                                <Checkbox id="remember" name="remember" tabIndex={3} />
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
@@ -126,18 +108,11 @@ export default function Login({
                                 <Separator className="w-full" />
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">
-                                    Or continue with
-                                </span>
+                                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                             </div>
                         </div>
 
-                        <Button
-                            variant="outline"
-                            type="button"
-                            className="w-full"
-                            asChild
-                        >
+                        <Button variant="outline" type="button" className="w-full" asChild>
                             <Link href={googleRedirect()}>
                                 <GoogleIcon className="mr-2 h-4 w-4" />
                                 Google
@@ -147,11 +122,7 @@ export default function Login({
                 )}
             </Form>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
 }

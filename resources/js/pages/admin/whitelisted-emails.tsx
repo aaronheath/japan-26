@@ -85,9 +85,7 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
                                     leave="transition ease-in-out"
                                     leaveTo="opacity-0"
                                 >
-                                    <p className="text-sm text-green-600">
-                                        Email added to whitelist.
-                                    </p>
+                                    <p className="text-sm text-green-600">Email added to whitelist.</p>
                                 </Transition>
                             </>
                         )}
@@ -96,16 +94,11 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Current whitelist</h4>
                         {emails.length === 0 ? (
-                            <p className="text-muted-foreground text-sm">
-                                No emails have been whitelisted yet.
-                            </p>
+                            <p className="text-sm text-muted-foreground">No emails have been whitelisted yet.</p>
                         ) : (
-                            <ul className="divide-border divide-y rounded-md border">
+                            <ul className="divide-y divide-border rounded-md border">
                                 {emails.map((email) => (
-                                    <li
-                                        key={email.id}
-                                        className="flex items-center justify-between px-4 py-3"
-                                    >
+                                    <li key={email.id} className="flex items-center justify-between px-4 py-3">
                                         <span className="text-sm">{email.email}</span>
                                         <Button
                                             variant="ghost"

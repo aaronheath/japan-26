@@ -3,13 +3,7 @@ import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -120,10 +114,7 @@ export default function Users({ users }: UsersProps) {
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-xl space-y-6">
-                    <HeadingSmall
-                        title="User Management"
-                        description="Create and manage user accounts"
-                    />
+                    <HeadingSmall title="User Management" description="Create and manage user accounts" />
 
                     <Form
                         {...UserManagementController.store.form()}
@@ -170,7 +161,7 @@ export default function Users({ users }: UsersProps) {
                                             <span className="text-sm">Google</span>
                                         </label>
                                     </div>
-                                    <p className="text-muted-foreground text-xs">
+                                    <p className="text-xs text-muted-foreground">
                                         {authType === 'password'
                                             ? 'A random password will be generated and displayed once.'
                                             : 'User will sign in via Google OAuth. Email will be auto-whitelisted.'}
@@ -189,9 +180,7 @@ export default function Users({ users }: UsersProps) {
                                     leave="transition ease-in-out"
                                     leaveTo="opacity-0"
                                 >
-                                    <p className="text-sm text-green-600">
-                                        User created successfully.
-                                    </p>
+                                    <p className="text-sm text-green-600">User created successfully.</p>
                                 </Transition>
                             </>
                         )}
@@ -200,37 +189,22 @@ export default function Users({ users }: UsersProps) {
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Current users</h4>
                         {users.length === 0 ? (
-                            <p className="text-muted-foreground text-sm">
-                                No users have been created yet.
-                            </p>
+                            <p className="text-sm text-muted-foreground">No users have been created yet.</p>
                         ) : (
-                            <ul className="divide-border divide-y rounded-md border">
+                            <ul className="divide-y divide-border rounded-md border">
                                 {users.map((user) => (
-                                    <li
-                                        key={user.id}
-                                        className="flex items-center justify-between px-4 py-3"
-                                    >
+                                    <li key={user.id} className="flex items-center justify-between px-4 py-3">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">
-                                                    {user.name}
-                                                </span>
+                                                <span className="text-sm font-medium">{user.name}</span>
                                                 <Badge
-                                                    variant={
-                                                        user.auth_type === 'google'
-                                                            ? 'secondary'
-                                                            : 'outline'
-                                                    }
+                                                    variant={user.auth_type === 'google' ? 'secondary' : 'outline'}
                                                     className="px-1.5 py-0 text-[10px]"
                                                 >
-                                                    {user.auth_type === 'google'
-                                                        ? 'Google'
-                                                        : 'Password'}
+                                                    {user.auth_type === 'google' ? 'Google' : 'Password'}
                                                 </Badge>
                                             </div>
-                                            <span className="text-muted-foreground text-xs">
-                                                {user.email}
-                                            </span>
+                                            <span className="text-xs text-muted-foreground">{user.email}</span>
                                         </div>
                                         <Button
                                             variant="ghost"
@@ -253,9 +227,7 @@ export default function Users({ users }: UsersProps) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>User Created</DialogTitle>
-                        <DialogDescription>
-                            Save this password now. It will only be shown once.
-                        </DialogDescription>
+                        <DialogDescription>Save this password now. It will only be shown once.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
@@ -269,16 +241,14 @@ export default function Users({ users }: UsersProps) {
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </div>
-                        {copied && (
-                            <p className="text-sm text-green-600">Copied to clipboard!</p>
-                        )}
+                        {copied && <p className="text-sm text-green-600">Copied to clipboard!</p>}
                         {copyFailed && (
                             <p className="text-sm text-amber-600">
-                                Auto-copy unavailable on HTTP. Please select the password
-                                above and copy manually (Cmd+C / Ctrl+C).
+                                Auto-copy unavailable on HTTP. Please select the password above and copy manually (Cmd+C
+                                / Ctrl+C).
                             </p>
                         )}
-                        <p className="text-destructive text-sm">
+                        <p className="text-sm text-destructive">
                             This password will not be shown again. Please save it securely.
                         </p>
                     </div>

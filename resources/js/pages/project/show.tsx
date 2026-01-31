@@ -29,11 +29,7 @@ interface ProjectShowProps {
     activityTypes: string[];
 }
 
-export default function ProjectShow({
-    project,
-    days,
-    activityTypes,
-}: ProjectShowProps) {
+export default function ProjectShow({ project, days, activityTypes }: ProjectShowProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: project.name,
@@ -46,19 +42,16 @@ export default function ProjectShow({
             <Head title={project.name} />
 
             <div className="p-4">
-                <h1 className="text-xl font-bold mb-4">Project Overview</h1>
+                <h1 className="mb-4 text-xl font-bold">Project Overview</h1>
 
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-b">
-                                <th className="py-2 px-3 text-left">Day</th>
-                                <th className="py-2 px-3 text-left">Travel</th>
+                                <th className="px-3 py-2 text-left">Day</th>
+                                <th className="px-3 py-2 text-left">Travel</th>
                                 {activityTypes.map((type) => (
-                                    <th
-                                        key={type}
-                                        className="py-2 px-3 text-left capitalize"
-                                    >
+                                    <th key={type} className="px-3 py-2 text-left capitalize">
                                         {type}
                                     </th>
                                 ))}
@@ -67,7 +60,7 @@ export default function ProjectShow({
                         <tbody>
                             {days.map((day) => (
                                 <tr key={day.number} className="border-b">
-                                    <td className="py-2 px-3">
+                                    <td className="px-3 py-2">
                                         <Link
                                             href={`/project/${project.id}/day/${day.number}`}
                                             className="text-blue-600 underline dark:text-blue-400"
@@ -75,7 +68,7 @@ export default function ProjectShow({
                                             Day {day.number}
                                         </Link>
                                     </td>
-                                    <td className="py-2 px-3">
+                                    <td className="px-3 py-2">
                                         {day.travel ? (
                                             day.travel.hasLlmCall ? (
                                                 <Link
@@ -85,39 +78,27 @@ export default function ProjectShow({
                                                     View
                                                 </Link>
                                             ) : (
-                                                <span className="text-muted-foreground">
-                                                    Pending
-                                                </span>
+                                                <span className="text-muted-foreground">Pending</span>
                                             )
                                         ) : (
-                                            <span className="text-muted-foreground/50">
-                                                &mdash;
-                                            </span>
+                                            <span className="text-muted-foreground/50">&mdash;</span>
                                         )}
                                     </td>
                                     {activityTypes.map((type) => (
-                                        <td key={type} className="py-2 px-3">
+                                        <td key={type} className="px-3 py-2">
                                             {day.activities[type] ? (
-                                                day.activities[type]
-                                                    .hasLlmCall ? (
+                                                day.activities[type].hasLlmCall ? (
                                                     <Link
-                                                        href={
-                                                            day.activities[type]
-                                                                .url
-                                                        }
+                                                        href={day.activities[type].url}
                                                         className="text-blue-600 underline dark:text-blue-400"
                                                     >
                                                         View
                                                     </Link>
                                                 ) : (
-                                                    <span className="text-muted-foreground">
-                                                        Pending
-                                                    </span>
+                                                    <span className="text-muted-foreground">Pending</span>
                                                 )
                                             ) : (
-                                                <span className="text-muted-foreground/50">
-                                                    &mdash;
-                                                </span>
+                                                <span className="text-muted-foreground/50">&mdash;</span>
                                             )}
                                         </td>
                                     ))}
