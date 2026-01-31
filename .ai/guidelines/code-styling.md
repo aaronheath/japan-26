@@ -77,3 +77,7 @@ const handleFormSuccess = (title: string) => {
     return title;
 };
 ```
+
+### Markdown
+
+The React app supports GitHub flavored markdown.

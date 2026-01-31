@@ -300,6 +300,10 @@ const handleFormSuccess = (title: string) => {
 };
 ```
 
+### Markdown
+
+The React app supports GitHub flavored markdown.
+
 === .ai/git rules ===
 
 # Git Guidelines

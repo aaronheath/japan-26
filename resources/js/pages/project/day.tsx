@@ -1,3 +1,4 @@
+import { Markdown } from '@/components/ui/markdown';
 import AppLayout from '@/layouts/app-layout';
 import { show as showProject } from '@/routes/project';
 import { show as showDay } from '@/routes/project/day';
@@ -54,15 +55,6 @@ interface DayPageProps {
     tab: string;
     travel: Travel | Record<string, never>;
     activities: Activity[];
-}
-
-function MarkdownContent({ content }: { content: string }) {
-    return (
-        <div
-            className="prose prose-sm max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: content }}
-        />
-    );
 }
 
 export default function DayPage({
@@ -152,7 +144,7 @@ export default function DayPage({
                             </p>
 
                             {travel.llm_call?.response && (
-                                <MarkdownContent
+                                <Markdown
                                     content={travel.llm_call.response}
                                 />
                             )}
@@ -185,7 +177,7 @@ export default function DayPage({
                                         </h2>
 
                                         {activity.llm_call?.response && (
-                                            <MarkdownContent
+                                            <Markdown
                                                 content={
                                                     activity.llm_call.response
                                                 }
