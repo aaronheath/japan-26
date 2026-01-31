@@ -36,6 +36,7 @@ export default function WhitelistedEmails({ emails }: WhitelistedEmailsProps) {
 
     const clearEmailInput = () => {
         const input = document.getElementById('email') as HTMLInputElement;
+
         if (input) {
             input.value = '';
         }

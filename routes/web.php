@@ -18,51 +18,53 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
-    ->name('google.redirect');
+Route::group(['prefix' => 'auth/google'], function () {
+    Route::get('redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+    Route::get('callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+});
 
-Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-    ->name('google.callback');
-
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('/project/{project}', [ProjectController::class, 'show'])
-        ->name('project.show');
-
-    Route::get('/project/{project}/day/{day}', DayController::class)
-        ->name('project.day.show');
+    Route::group(['prefix' => 'project'], function () {
+        Route::get('{project}', [ProjectController::class, 'show'])->name('project.show');
+        Route::get('{project}/day/{day}', DayController::class)->name('project.day.show');
+    });
 });
 
-Route::middleware('auth')->group(function () {
+Route::group(['middleware' => 'auth'], function () {
     Route::redirect('settings', '/settings/profile');
 
-    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::group(['prefix' => 'settings'], function () {
+        Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('settings/password', [PasswordController::class, 'edit'])->name('user-password.edit');
+        Route::get('password', [PasswordController::class, 'edit'])->name('user-password.edit');
+        Route::put('password', [PasswordController::class, 'update'])
+            ->middleware('throttle:6,1')
+            ->name('user-password.update');
 
-    Route::put('settings/password', [PasswordController::class, 'update'])
-        ->middleware('throttle:6,1')
-        ->name('user-password.update');
+        Route::get('appearance', function () {
+            return Inertia::render('settings/appearance');
+        })->name('appearance.edit');
 
-    Route::get('settings/appearance', function () {
-        return Inertia::render('settings/appearance');
-    })->name('appearance.edit');
+        Route::get('two-factor', [TwoFactorAuthenticationController::class, 'show'])->name('two-factor.show');
+    });
 
-    Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
-        ->name('two-factor.show');
-});
+    Route::group(['prefix' => 'admin'], function () {
+        Route::group(['prefix' => 'users'], function () {
+            Route::get('/', [UserManagementController::class, 'index'])->name('admin.users.index');
+            Route::post('/', [UserManagementController::class, 'store'])->name('admin.users.store');
+            Route::delete('{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');
+        });
 
-Route::middleware('auth')->prefix('admin')->group(function () {
-    Route::get('users', [UserManagementController::class, 'index'])->name('admin.users.index');
-    Route::post('users', [UserManagementController::class, 'store'])->name('admin.users.store');
-    Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');
-
-    Route::get('whitelisted-emails', [WhitelistedEmailController::class, 'index'])->name('admin.whitelisted-emails.index');
-    Route::post('whitelisted-emails', [WhitelistedEmailController::class, 'store'])->name('admin.whitelisted-emails.store');
-    Route::delete('whitelisted-emails/{whitelistedEmail}', [WhitelistedEmailController::class, 'destroy'])->name('admin.whitelisted-emails.destroy');
+        Route::group(['prefix' => 'whitelisted-emails'], function () {
+            Route::get('/', [WhitelistedEmailController::class, 'index'])->name('admin.whitelisted-emails.index');
+            Route::post('/', [WhitelistedEmailController::class, 'store'])->name('admin.whitelisted-emails.store');
+            Route::delete('{whitelistedEmail}', [WhitelistedEmailController::class, 'destroy'])->name('admin.whitelisted-emails.destroy');
+        });
+    });
 });

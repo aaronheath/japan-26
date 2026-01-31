@@ -38,6 +38,10 @@ $rules => [
 ];
 ```
 
+### Route Files
+
+Use `Route::group()` to group routes together whenever possible. Use nested `Route::group()` when necessary up to a depth of 3.
+
 ## React / Typescript
 
 ### Element attribute function values
@@ -45,3 +49,31 @@ $rules => [
 Where the logic of an element attribute is complex or more than 3 lines, it should be extracted into a separate function.
 
 Keep functions on a single line when possible.
+
+### Line breaks
+
+Prefer to have a single line break between statements.
+
+```typescript
+const handleFormSuccess = (title: string) => {
+    const uppercaseTitle = title.toUpperCase();
+    if(title.length > 10) {
+        return uppercaseTitle;
+    }
+    return title;
+};
+```
+
+should be written as:
+
+```typescript
+const handleFormSuccess = (title: string) => {
+    const uppercaseTitle = title.toUpperCase();
+    
+    if(title.length > 10) {
+        return uppercaseTitle;
+    }
+    
+    return title;
+};
+```

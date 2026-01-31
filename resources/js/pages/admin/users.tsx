@@ -55,6 +55,7 @@ export default function Users({ users }: UsersProps) {
             alert('You cannot delete your own account from this page.');
             return;
         }
+
         if (confirm('Are you sure you want to delete this user?')) {
             router.delete(`/admin/users/${userId}`);
         }
@@ -82,8 +83,10 @@ export default function Users({ users }: UsersProps) {
                 document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.setSelectionRange(0, generatedPassword.length);
+
                 const success = document.execCommand('copy');
                 document.body.removeChild(textArea);
+
                 if (success) {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
@@ -98,10 +101,13 @@ export default function Users({ users }: UsersProps) {
 
     const handleFormSuccess = (page: { props: { flash?: FlashData } }) => {
         const input = document.getElementById('email') as HTMLInputElement;
+
         if (input) {
             input.value = '';
         }
+
         const flashData = page.props.flash;
+
         if (flashData?.generated_password) {
             setGeneratedPassword(flashData.generated_password);
             setShowPasswordModal(true);
