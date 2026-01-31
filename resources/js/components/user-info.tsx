@@ -4,13 +4,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { type SharedData, type User } from '@/types';
 import { usePage } from '@inertiajs/react';
 
-export function UserInfo({
-    user,
-    showEmail = false,
-}: {
-    user: User;
-    showEmail?: boolean;
-}) {
+export function UserInfo({ user, showEmail = false }: { user: User; showEmail?: boolean }) {
     const getInitials = useInitials();
     const { auth } = usePage<SharedData>().props;
 
@@ -35,11 +29,7 @@ export function UserInfo({
                         </Badge>
                     )}
                 </span>
-                {showEmail && (
-                    <span className="truncate text-xs text-muted-foreground">
-                        {user.email}
-                    </span>
-                )}
+                {showEmail && <span className="truncate text-xs text-muted-foreground">{user.email}</span>}
             </div>
         </>
     );
