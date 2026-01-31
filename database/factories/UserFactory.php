@@ -55,4 +55,15 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user authenticated via Google OAuth.
+     */
+    public function googleUser(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'google_id' => fn () => (string) fake()->unique()->numberBetween(100000000000000000, 999999999999999999),
+            'password' => null,
+        ]);
+    }
 }

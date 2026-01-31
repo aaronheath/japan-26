@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration(), // Registration disabled - users created via Google OAuth (if whitelisted), seeder, or admin
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

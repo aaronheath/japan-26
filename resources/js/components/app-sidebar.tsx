@@ -11,9 +11,12 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as usersIndex } from '@/routes/admin/users';
+import { index as whitelistedEmailsIndex } from '@/routes/admin/whitelisted-emails';
+import { show as showProject } from '@/routes/project';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Mail, Map, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -22,18 +25,23 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Japan 2026',
+        href: showProject(1),
+        icon: Map,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Users',
+        href: usersIndex(),
+        icon: Users,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Whitelisted Emails',
+        href: whitelistedEmailsIndex(),
+        icon: Mail,
     },
 ];
 

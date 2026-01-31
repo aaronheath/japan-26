@@ -1,9 +1,6 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
-export interface Auth {
-    user: User;
-}
 
 export interface BreadcrumbItem {
     title: string;
@@ -20,6 +17,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    external?: boolean;
 }
 
 export interface SharedData {
@@ -35,9 +33,15 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    google_id?: string | null;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Auth {
+    user: User;
+    auth_method?: 'password' | 'google';
 }

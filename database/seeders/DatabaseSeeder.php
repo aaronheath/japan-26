@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Country;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -57,10 +58,24 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        $this->users();
         $this->countries();
         $this->statesAndCities();
         $this->wrestlingVenues();
         $this->japan26Project();
+    }
+
+    protected function users()
+    {
+        User::updateOrCreate(
+            [
+                'email' => 'aaron@aaronheath.com',
+            ],
+            [
+                'name' => 'Aaron Heath',
+                'password' => bcrypt('password'),
+            ],
+        );
     }
 
     protected function countries()
