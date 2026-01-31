@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { triggerRegenerationStarted } from '@/hooks/use-regeneration-status';
 import { getApiHeaders } from '@/lib/utils';
 import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
@@ -69,6 +70,8 @@ export function RegenerateButton({
             toast.success('Regeneration started', {
                 description: `Processing ${data.total_jobs} job${data.total_jobs > 1 ? 's' : ''}`,
             });
+
+            triggerRegenerationStarted();
         } catch {
             toast.error('Failed to start regeneration');
         } finally {

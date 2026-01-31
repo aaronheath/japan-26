@@ -26,6 +26,12 @@ interface RegenerationStatus {
     recently_completed: RecentlyCompletedBatch[];
 }
 
+export const REGENERATION_STARTED_EVENT = 'regeneration-started';
+
+export function triggerRegenerationStarted() {
+    window.dispatchEvent(new CustomEvent(REGENERATION_STARTED_EVENT));
+}
+
 export function useRegenerationStatus(projectId: number) {
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isHorizonRunning, setIsHorizonRunning] = useState(false);
@@ -73,6 +79,18 @@ export function useRegenerationStatus(projectId: number) {
 
         return () => clearTimeout(timeoutId);
     }, [projectId, fetchStatus]);
+
+    useEffect(() => {
+        const handleRegenerationStarted = () => {
+            fetchStatus();
+        };
+
+        window.addEventListener(REGENERATION_STARTED_EVENT, handleRegenerationStarted);
+
+        return () => {
+            window.removeEventListener(REGENERATION_STARTED_EVENT, handleRegenerationStarted);
+        };
+    }, [fetchStatus]);
 
     return {
         isRegenerating,

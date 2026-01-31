@@ -7,6 +7,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { triggerRegenerationStarted } from '@/hooks/use-regeneration-status';
 import { getApiHeaders } from '@/lib/utils';
 import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
@@ -78,6 +79,7 @@ export function RegenerationConfirmDialog({
                 description: `Processing ${data.total_jobs} job${data.total_jobs > 1 ? 's' : ''}`,
             });
 
+            triggerRegenerationStarted();
             onOpenChange(false);
         } catch {
             toast.error('Failed to start regeneration');
