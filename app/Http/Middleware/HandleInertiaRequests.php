@@ -47,6 +47,9 @@ class HandleInertiaRequests extends Middleware
                 'auth_method' => $request->session()->get('auth_method', 'password'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'generated_password' => fn () => $request->session()->get('generated_password'),
+            ],
         ];
     }
 }

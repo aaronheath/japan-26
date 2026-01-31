@@ -1,3 +1,4 @@
+import UserManagementController from '@/actions/App/Http/Controllers/Settings/UserManagementController';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import UserManagementController from '@/actions/App/Http/Controllers/Settings/UserManagementController';
 import { index } from '@/routes/users';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
@@ -46,8 +46,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Users({ users }: UsersProps) {
     const { auth } = usePage<SharedData & { flash: FlashData }>().props;
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+    const [generatedPassword, setGeneratedPassword] = useState<string | null>(
+        null,
+    );
     const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
     const [authType, setAuthType] = useState<'password' | 'google'>('password');
 
     const handleDelete = (userId: number) => {
@@ -61,10 +64,38 @@ export default function Users({ users }: UsersProps) {
     };
 
     const handleCopy = async () => {
-        if (generatedPassword) {
-            await navigator.clipboard.writeText(generatedPassword);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+        if (!generatedPassword) {
+            return;
+        }
+
+        setCopyFailed(false);
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(generatedPassword);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = generatedPassword;
+                textArea.setAttribute('readonly', '');
+                textArea.style.position = 'absolute';
+                textArea.style.left = '-9999px';
+                textArea.style.top = `${window.pageYOffset || document.documentElement.scrollTop}px`;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.setSelectionRange(0, generatedPassword.length);
+                const success = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (success) {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } else {
+                    setCopyFailed(true);
+                }
+            }
+        } catch {
+            setCopyFailed(true);
         }
     };
 
@@ -84,13 +115,19 @@ export default function Users({ users }: UsersProps) {
                         options={{
                             preserveScroll: true,
                             onSuccess: (page) => {
-                                const input = document.getElementById('email') as HTMLInputElement;
+                                const input = document.getElementById(
+                                    'email',
+                                ) as HTMLInputElement;
                                 if (input) {
                                     input.value = '';
                                 }
-                                const flashData = page.props.flash as FlashData | undefined;
+                                const flashData = page.props.flash as
+                                    | FlashData
+                                    | undefined;
                                 if (flashData?.generated_password) {
-                                    setGeneratedPassword(flashData.generated_password);
+                                    setGeneratedPassword(
+                                        flashData.generated_password,
+                                    );
                                     setShowPasswordModal(true);
                                 }
                             },
@@ -119,11 +156,17 @@ export default function Users({ users }: UsersProps) {
                                                 type="radio"
                                                 name="auth_type"
                                                 value="password"
-                                                checked={authType === 'password'}
-                                                onChange={() => setAuthType('password')}
+                                                checked={
+                                                    authType === 'password'
+                                                }
+                                                onChange={() =>
+                                                    setAuthType('password')
+                                                }
                                                 className="h-4 w-4"
                                             />
-                                            <span className="text-sm">Password</span>
+                                            <span className="text-sm">
+                                                Password
+                                            </span>
                                         </label>
                                         <label className="flex items-center gap-2">
                                             <input
@@ -131,10 +174,14 @@ export default function Users({ users }: UsersProps) {
                                                 name="auth_type"
                                                 value="google"
                                                 checked={authType === 'google'}
-                                                onChange={() => setAuthType('google')}
+                                                onChange={() =>
+                                                    setAuthType('google')
+                                                }
                                                 className="h-4 w-4"
                                             />
-                                            <span className="text-sm">Google</span>
+                                            <span className="text-sm">
+                                                Google
+                                            </span>
                                         </label>
                                     </div>
                                     <p className="text-xs text-muted-foreground">
@@ -150,7 +197,9 @@ export default function Users({ users }: UsersProps) {
                                 </Button>
 
                                 <Transition
-                                    show={recentlySuccessful && !showPasswordModal}
+                                    show={
+                                        recentlySuccessful && !showPasswordModal
+                                    }
                                     enter="transition ease-in-out"
                                     enterFrom="opacity-0"
                                     leave="transition ease-in-out"
@@ -184,11 +233,12 @@ export default function Users({ users }: UsersProps) {
                                                 </span>
                                                 <Badge
                                                     variant={
-                                                        user.auth_type === 'google'
+                                                        user.auth_type ===
+                                                        'google'
                                                             ? 'secondary'
                                                             : 'outline'
                                                     }
-                                                    className="text-[10px] px-1.5 py-0"
+                                                    className="px-1.5 py-0 text-[10px]"
                                                 >
                                                     {user.auth_type === 'google'
                                                         ? 'Google'
@@ -202,7 +252,9 @@ export default function Users({ users }: UsersProps) {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleDelete(user.id)}
+                                            onClick={() =>
+                                                handleDelete(user.id)
+                                            }
                                             disabled={user.id === auth.user.id}
                                             className="text-destructive hover:text-destructive disabled:opacity-50"
                                         >
@@ -216,7 +268,10 @@ export default function Users({ users }: UsersProps) {
                 </div>
             </SettingsLayout>
 
-            <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+            <Dialog
+                open={showPasswordModal}
+                onOpenChange={setShowPasswordModal}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>User Created</DialogTitle>
@@ -226,9 +281,12 @@ export default function Users({ users }: UsersProps) {
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 rounded bg-muted px-3 py-2 font-mono text-sm">
-                                {generatedPassword}
-                            </code>
+                            <Input
+                                readOnly
+                                value={generatedPassword || ''}
+                                className="flex-1 font-mono text-sm"
+                                onFocus={(e) => e.target.select()}
+                            />
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -242,9 +300,16 @@ export default function Users({ users }: UsersProps) {
                                 Copied to clipboard!
                             </p>
                         )}
+                        {copyFailed && (
+                            <p className="text-sm text-amber-600">
+                                Auto-copy unavailable on HTTP. Please select the
+                                password above and copy manually (Cmd+C /
+                                Ctrl+C).
+                            </p>
+                        )}
                         <p className="text-sm text-destructive">
-                            This password will not be shown again. Please save it
-                            securely.
+                            This password will not be shown again. Please save
+                            it securely.
                         </p>
                     </div>
                 </DialogContent>
