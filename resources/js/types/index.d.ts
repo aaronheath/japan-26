@@ -20,11 +20,18 @@ export interface NavItem {
     suffix?: React.ReactNode;
 }
 
+export interface SimpleProject {
+    id: number;
+    name: string;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    projects: SimpleProject[];
+    selectedProjectId: number;
     [key: string]: unknown;
 }
 

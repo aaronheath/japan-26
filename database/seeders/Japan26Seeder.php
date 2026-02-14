@@ -31,7 +31,7 @@ class Japan26Seeder extends Seeder
             ],
             [
                 'start_date' => '2026-08-01', // Saturday - Departure from Adelaide
-                'end_date' => '2026-08-20', // Thursday - Arrival back in Adelaide
+                'end_date' => '2026-08-22', // Saturday - Arrival back in Adelaide
             ]
         );
     }

@@ -18,15 +18,18 @@
 ```
 app/
 ├── Casts/               # Custom Eloquent casts
-├── Enums/               # DayActivities, LlmModels
+├── Enums/               # DayActivities, LlmModels, VenueType
 ├── Http/
 │   ├── Controllers/     # ProjectController, DayController, Settings
+│   │   └── Manage/      # CRUD management controllers (Countries, States, Cities, Venues, Addresses, Projects, DayTravel, DayAccommodation, DayActivity)
 │   ├── Middleware/      # Inertia, Appearance handling
-│   └── Requests/        # Form validation classes
+│   └── Requests/
+│       └── Manage/      # Form request validation for management controllers
 ├── Models/              # Eloquent models (see Domain Models below)
 ├── Providers/           # AppServiceProvider, FortifyServiceProvider
 ├── Services/
-│   └── LLM/             # LLM generation service and generators
+│   ├── LLM/             # LLM generation service and generators
+│   └── ProjectVersionService.php  # Creates new project versions on date changes
 ├── Traits/              # LlmCallable trait
 └── View/Components/     # Blade layout component
 ```
@@ -41,6 +44,7 @@ resources/js/
 ├── hooks/               # Custom React hooks
 ├── layouts/             # App, Auth, Settings layouts
 ├── pages/               # Inertia page components
+│   └── manage/          # Management CRUD pages (countries, states, cities, venues, addresses, projects, project/{travel,accommodations,activities})
 ├── routes/              # Wayfinder-generated named routes
 ├── app.tsx              # React entry point
 └── lib/utils.ts         # Utility functions
@@ -66,7 +70,8 @@ resources/js/
 | `Country` | Country container | Has many `State`, `City` |
 | `State` | State/prefecture | Belongs to `Country`, has many `City` |
 | `City` | City with timezone | Belongs to `Country`, `State`, has many `Venue` |
-| `Venue` | Specific location | Belongs to `City`, has type (hotel, restaurant, etc.) |
+| `Venue` | Specific location | Belongs to `City`, has type (`VenueType` enum), morphOne `Address` |
+| `Address` | Physical address | MorphTo `addressable`, belongs to `Country`, `State`, `City` |
 
 ### AI Interactions
 
@@ -115,8 +120,9 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 |-----------|---------|
 | `AppLayout` | Main authenticated layout |
 | `AppShell` | Navigation wrapper |
-| `AppSidebar` | Persistent sidebar navigation |
+| `AppSidebar` | Persistent sidebar navigation with Manage and Project sections |
 | `AppHeader` | Top bar with user menu |
+| `ProjectSelector` | Sidebar dropdown for selecting active project (session-based) |
 
 ### Custom Hooks
 
@@ -128,7 +134,7 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 
 - **Framework**: Laravel Fortify
 - **Features**: Registration, login, 2FA with recovery codes, email verification
-- **Middleware**: `HandleInertiaRequests` shares user and app state
+- **Middleware**: `HandleInertiaRequests` shares user, app state, projects list, and selected project ID
 
 ## Routes
 
@@ -141,6 +147,16 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 | `/project/{project}` | `ProjectController@show` | Project overview |
 | `/project/{project}/day/{day}` | `DayController` | Day details |
 | `/settings/*` | Settings controllers | Profile, password, 2FA |
+| `/manage/countries` | `CountryController` | Country CRUD |
+| `/manage/states` | `StateController` | State CRUD |
+| `/manage/cities` | `CityController` | City CRUD |
+| `/manage/venues` | `VenueController` | Venue CRUD |
+| `/manage/addresses` | `AddressController` | Address CRUD |
+| `/manage/projects` | `ProjectManagementController` | Project CRUD with version management |
+| `/manage/set-project` | `SetProjectController` | Set active project in session |
+| `/manage/project/{project}/travel` | `DayTravelManagementController` | Day travel CRUD |
+| `/manage/project/{project}/accommodations` | `DayAccommodationManagementController` | Day accommodation CRUD |
+| `/manage/project/{project}/activities` | `DayActivityManagementController` | Day activity CRUD |
 
 ## Key Patterns
 

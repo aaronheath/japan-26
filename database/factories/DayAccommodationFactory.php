@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Day;
+use App\Models\Venue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,8 @@ class DayAccommodationFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'day_id' => fn () => Day::factory(),
+            'venue_id' => fn () => Venue::factory(),
         ];
     }
 }
