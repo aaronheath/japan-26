@@ -7,7 +7,7 @@ if git diff --cached --name-only | grep -q "^\.ai/guidelines/"; then
 fi
 
 echo "Running phpstan..."
-composer run phpstan
+herd php vendor/bin/phpstan analyse
 
 echo "Running pint..."
-composer run pint-repair
+herd php vendor/bin/pint --repair
