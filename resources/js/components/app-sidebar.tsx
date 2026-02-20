@@ -1,6 +1,5 @@
 import { HorizonStatusBadge } from '@/components/horizon-status-badge';
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { ProjectSelector } from '@/components/project-selector';
 import { RegenerationStatusIndicator } from '@/components/regeneration-status-indicator';
@@ -17,7 +16,6 @@ import {
 } from '@/components/ui/sidebar';
 import { useRegenerationStatus } from '@/hooks/use-regeneration-status';
 import { resolveUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
 import { index as usersIndex } from '@/routes/admin/users';
 import { index as whitelistedEmailsIndex } from '@/routes/admin/whitelisted-emails';
 import { show as showProject } from '@/routes/project';
@@ -31,7 +29,6 @@ import {
     FolderKanban,
     Globe,
     Hotel,
-    LayoutGrid,
     Mail,
     Map,
     MapPin,
@@ -42,20 +39,8 @@ import {
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Japan 2026',
-        href: showProject(1),
-        icon: Map,
-    },
-];
-
 const manageNavItems: NavItem[] = [
+    { title: 'Projects', href: '/manage/projects', icon: FolderKanban },
     { title: 'Countries', href: '/manage/countries', icon: Globe },
     { title: 'States', href: '/manage/states', icon: MapPin },
     { title: 'Cities', href: '/manage/cities', icon: Building2 },
@@ -69,7 +54,7 @@ export function AppSidebar() {
 
     const projectNavItems: NavItem[] = useMemo(
         () => [
-            { title: 'Projects', href: '/manage/projects', icon: FolderKanban },
+            { title: 'Overview', href: showProject.url(selectedProjectId), icon: Map },
             { title: 'Travel', href: `/manage/project/${selectedProjectId}/travel`, icon: Plane },
             { title: 'Accommodations', href: `/manage/project/${selectedProjectId}/accommodations`, icon: Bed },
             { title: 'Activities', href: `/manage/project/${selectedProjectId}/activities`, icon: CalendarDays },
@@ -106,7 +91,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={showProject.url(selectedProjectId)} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -115,24 +100,6 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
-
-                <SidebarGroup className="px-2 py-0">
-                    <SidebarGroupLabel>Manage</SidebarGroupLabel>
-                    <SidebarMenu>
-                        {manageNavItems.map((item) => (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton asChild tooltip={{ children: item.title }}>
-                                    <Link href={item.href} prefetch>
-                                        {item.icon && <item.icon />}
-                                        <span>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
-                </SidebarGroup>
-
                 <SidebarGroup className="px-2 py-0">
                     <SidebarGroupLabel>Project</SidebarGroupLabel>
                     <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
@@ -149,6 +116,22 @@ export function AppSidebar() {
                                     }
                                     tooltip={{ children: item.title }}
                                 >
+                                    <Link href={item.href} prefetch>
+                                        {item.icon && <item.icon />}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
+
+                <SidebarGroup className="px-2 py-0">
+                    <SidebarGroupLabel>Manage</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {manageNavItems.map((item) => (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton asChild tooltip={{ children: item.title }}>
                                     <Link href={item.href} prefetch>
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>

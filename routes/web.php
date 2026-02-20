@@ -36,9 +36,11 @@ Route::group(['prefix' => 'auth/google'], function () {
 });
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('home', function () {
+        $projectId = session('selected_project_id', 1);
+
+        return redirect("/project/{$projectId}");
+    })->name('home.redirect');
 
     Route::group(['prefix' => 'project'], function () {
         Route::get('{project}', [ProjectController::class, 'show'])->name('project.show');
