@@ -100,7 +100,7 @@ test('password login still works', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('home.redirect', absolute: false));
 });
 
 test('logout works after google login', function () {

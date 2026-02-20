@@ -91,7 +91,7 @@ class DatabaseSeeder extends Seeder
 
     protected function statesAndCities()
     {
-        $australia = Country::where('name', 'Japan')->first();
+        $australia = Country::where('name', 'Australia')->first();
 
         collect(self::AUSTRALIA_CITY_STATES)->each(function ($city) use (&$australia) {
             $state = $australia->states()->updateOrCreate([

@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Project;
-use App\Models\User;
 
 test('home page is accessible without auth', function () {
     $response = $this->get(route('home'));
@@ -9,18 +8,10 @@ test('home page is accessible without auth', function () {
     $response->assertOk();
 });
 
-test('dashboard requires authentication', function () {
-    $response = $this->get(route('dashboard'));
+test('home redirect requires authentication', function () {
+    $response = $this->get(route('home.redirect'));
 
     $response->assertRedirect(route('login'));
-});
-
-test('dashboard is accessible when authenticated', function () {
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get(route('dashboard'));
-
-    $response->assertOk();
 });
 
 test('project page requires authentication', function () {

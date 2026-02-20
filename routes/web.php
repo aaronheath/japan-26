@@ -6,6 +6,16 @@ use App\Http\Controllers\Api\RegenerationController;
 use App\Http\Controllers\Api\RegenerationStatusController;
 use App\Http\Controllers\DayController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\Manage\AddressController;
+use App\Http\Controllers\Manage\CityController;
+use App\Http\Controllers\Manage\CountryController;
+use App\Http\Controllers\Manage\DayAccommodationManagementController;
+use App\Http\Controllers\Manage\DayActivityManagementController;
+use App\Http\Controllers\Manage\DayTravelManagementController;
+use App\Http\Controllers\Manage\ProjectManagementController;
+use App\Http\Controllers\Manage\SetProjectController;
+use App\Http\Controllers\Manage\StateController;
+use App\Http\Controllers\Manage\VenueController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -26,13 +36,31 @@ Route::group(['prefix' => 'auth/google'], function () {
 });
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('home', function () {
+        $projectId = session('selected_project_id', 1);
+
+        return redirect("/project/{$projectId}");
+    })->name('home.redirect');
 
     Route::group(['prefix' => 'project'], function () {
         Route::get('{project}', [ProjectController::class, 'show'])->name('project.show');
         Route::get('{project}/day/{day}', DayController::class)->name('project.day.show');
+    });
+
+    Route::group(['prefix' => 'manage', 'as' => 'manage.'], function () {
+        Route::post('set-project', SetProjectController::class)->name('set-project');
+        Route::resource('countries', CountryController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('states', StateController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('cities', CityController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('venues', VenueController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('addresses', AddressController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('projects', ProjectManagementController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        Route::group(['prefix' => 'project/{project}', 'as' => 'project.'], function () {
+            Route::resource('travel', DayTravelManagementController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::resource('accommodations', DayAccommodationManagementController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::resource('activities', DayActivityManagementController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
     });
 
     Route::group(['prefix' => 'api/regeneration'], function () {

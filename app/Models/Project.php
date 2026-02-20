@@ -32,6 +32,14 @@ class Project extends Model
         return $this->hasMany(ProjectVersion::class);
     }
 
+    /**
+     * @return HasMany<ProjectVersion, $this>
+     */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ProjectVersion::class);
+    }
+
     public function latestVersion(): ?ProjectVersion
     {
         /** @var ProjectVersion|null */

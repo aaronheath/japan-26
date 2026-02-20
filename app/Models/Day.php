@@ -41,6 +41,14 @@ class Day extends Model
     }
 
     /**
+     * @return HasOne<DayAccommodation, $this>
+     */
+    public function accommodation(): HasOne
+    {
+        return $this->hasOne(DayAccommodation::class);
+    }
+
+    /**
      * @return HasMany<DayActivity, $this>
      */
     public function activities(): HasMany
