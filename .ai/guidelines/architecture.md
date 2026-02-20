@@ -2,7 +2,7 @@
 
 ## Tech Stack
 
-**Backend**: PHP 8.4, Laravel 12, Inertia.js v2, Prism (LLM integration)
+**Backend**: PHP 8.5, Laravel 12, Inertia.js v2, Prism (LLM integration)
 **Frontend**: React 19, TypeScript, Tailwind CSS v4, Wayfinder, Radix UI
 **Database**: MySQL
 **Testing**: Pest v4
