@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WhitelistedEmailController;
+use App\Http\Controllers\Api\AddressLookupController;
 use App\Http\Controllers\Api\RegenerationController;
 use App\Http\Controllers\Api\RegenerationStatusController;
 use App\Http\Controllers\DayController;
@@ -64,6 +65,11 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
             Route::resource('accommodations', DayAccommodationManagementController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::resource('activities', DayActivityManagementController::class)->only(['index', 'store', 'update', 'destroy']);
         });
+    });
+
+    Route::group(['prefix' => 'api/address-lookup'], function () {
+        Route::get('autocomplete', [AddressLookupController::class, 'autocomplete'])->name('api.address-lookup.autocomplete');
+        Route::get('place/{placeId}', [AddressLookupController::class, 'placeDetails'])->name('api.address-lookup.place-details');
     });
 
     Route::group(['prefix' => 'api/regeneration'], function () {

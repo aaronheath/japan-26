@@ -27,6 +27,8 @@ class AddressFactory extends Factory
             'line_1' => fn () => fake()->streetAddress(),
             'line_2' => fn () => fake()->optional()->secondaryAddress(),
             'line_3' => fn () => null,
+            'latitude' => fn () => fake()->latitude(),
+            'longitude' => fn () => fake()->longitude(),
         ];
     }
 }

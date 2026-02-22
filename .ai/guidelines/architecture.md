@@ -18,6 +18,7 @@ app/
 ├── Enums/               # DayActivities, LlmModels, PromptType, VenueType
 ├── Http/
 │   ├── Controllers/     # ProjectController, DayController, Settings
+│   │   ├── Api/         # AddressLookupController, RegenerationController
 │   │   └── Manage/      # CRUD management controllers (Countries, States, Cities, Venues, Addresses, Projects, Prompts, DayTravel, DayAccommodation, DayActivity)
 │   ├── Middleware/      # Inertia, Appearance handling
 │   └── Requests/
@@ -26,6 +27,7 @@ app/
 ├── Providers/           # AppServiceProvider, FortifyServiceProvider
 ├── Services/
 │   ├── LLM/             # LLM generation service and generators
+│   ├── AddressLookupService.php  # Google Places autocomplete and geo record creation
 │   └── ProjectVersionService.php  # Creates new project versions on date changes
 ├── Traits/              # LlmCallable trait
 └── View/Components/     # Blade layout component
@@ -37,6 +39,7 @@ app/
 resources/js/
 ├── actions/             # Wayfinder-generated TypeScript route actions
 ├── components/
+│   ├── address-lookup.tsx  # Google Places address autocomplete
 │   └── ui/              # Shadcn/Radix UI components
 ├── hooks/               # Custom React hooks
 ├── layouts/             # App, Auth, Settings layouts
@@ -68,7 +71,7 @@ resources/js/
 | `State` | State/prefecture | Belongs to `Country`, has many `City` |
 | `City` | City with timezone | Belongs to `Country`, `State`, has many `Venue` |
 | `Venue` | Specific location | Belongs to `City`, has type (`VenueType` enum), morphOne `Address` |
-| `Address` | Physical address | MorphTo `addressable`, belongs to `Country`, `State`, `City` |
+| `Address` | Physical address with coordinates | MorphTo `addressable`, belongs to `Country`, `State`, `City` |
 
 ### Prompt Management
 
@@ -162,6 +165,8 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 | `/manage/project/{project}/travel` | `DayTravelManagementController` | Day travel CRUD |
 | `/manage/project/{project}/accommodations` | `DayAccommodationManagementController` | Day accommodation CRUD |
 | `/manage/project/{project}/activities` | `DayActivityManagementController` | Day activity CRUD |
+| `/api/address-lookup/autocomplete` | `AddressLookupController` | Google Places autocomplete |
+| `/api/address-lookup/place/{placeId}` | `AddressLookupController` | Google Place details with geo record creation |
 
 ## Key Patterns
 
