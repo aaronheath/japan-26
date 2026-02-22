@@ -13,6 +13,7 @@ use App\Http\Controllers\Manage\DayAccommodationManagementController;
 use App\Http\Controllers\Manage\DayActivityManagementController;
 use App\Http\Controllers\Manage\DayTravelManagementController;
 use App\Http\Controllers\Manage\ProjectManagementController;
+use App\Http\Controllers\Manage\PromptController;
 use App\Http\Controllers\Manage\SetProjectController;
 use App\Http\Controllers\Manage\StateController;
 use App\Http\Controllers\Manage\VenueController;
@@ -54,6 +55,8 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::resource('cities', CityController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('venues', VenueController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('addresses', AddressController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('prompts', PromptController::class)->only(['index', 'store', 'update']);
+        Route::post('prompts/{prompt}/revert', [PromptController::class, 'revert'])->name('prompts.revert');
         Route::resource('projects', ProjectManagementController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::group(['prefix' => 'project/{project}', 'as' => 'project.'], function () {

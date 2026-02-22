@@ -15,10 +15,10 @@
 ```
 app/
 ├── Casts/               # Custom Eloquent casts
-├── Enums/               # DayActivities, LlmModels, VenueType
+├── Enums/               # DayActivities, LlmModels, PromptType, VenueType
 ├── Http/
 │   ├── Controllers/     # ProjectController, DayController, Settings
-│   │   └── Manage/      # CRUD management controllers (Countries, States, Cities, Venues, Addresses, Projects, DayTravel, DayAccommodation, DayActivity)
+│   │   └── Manage/      # CRUD management controllers (Countries, States, Cities, Venues, Addresses, Projects, Prompts, DayTravel, DayAccommodation, DayActivity)
 │   ├── Middleware/      # Inertia, Appearance handling
 │   └── Requests/
 │       └── Manage/      # Form request validation for management controllers
@@ -41,7 +41,7 @@ resources/js/
 ├── hooks/               # Custom React hooks
 ├── layouts/             # App, Auth, Settings layouts
 ├── pages/               # Inertia page components
-│   └── manage/          # Management CRUD pages (countries, states, cities, venues, addresses, projects, project/{travel,accommodations,activities})
+│   └── manage/          # Management CRUD pages (countries, states, cities, venues, addresses, projects, prompts, project/{travel,accommodations,activities})
 ├── routes/              # Wayfinder-generated named routes
 ├── app.tsx              # React entry point
 └── lib/utils.ts         # Utility functions
@@ -70,11 +70,18 @@ resources/js/
 | `Venue` | Specific location | Belongs to `City`, has type (`VenueType` enum), morphOne `Address` |
 | `Address` | Physical address | MorphTo `addressable`, belongs to `Country`, `State`, `City` |
 
+### Prompt Management
+
+| Model | Purpose | Key Relationships |
+|-------|---------|-------------------|
+| `Prompt` | Prompt entity with slug, type, and active version | Has many `PromptVersion`, belongs to self (system prompt) |
+| `PromptVersion` | Immutable versioned prompt content | Belongs to `Prompt` |
+
 ### AI Interactions
 
 | Model | Purpose |
 |-------|---------|
-| `LlmCall` | Stores every LLM API call with prompts, responses, and token counts |
+| `LlmCall` | Stores every LLM API call with prompt version references, responses, and token counts |
 
 ## LLM Service Architecture
 
@@ -88,8 +95,8 @@ resources/js/
 **BaseLlmGenerator** (Abstract)
 - Base class for all LLM generators
 - Manages Prism integration with caching via hash comparison
-- Handles prompt rendering from Blade views (`resources/views/prompts/`)
-- Stores `LlmCall` records with token counts
+- Loads prompt templates from database (`Prompt`/`PromptVersion` models) and renders with `Blade::render()`
+- Stores `LlmCall` records with prompt version references and token counts
 
 **Concrete Generators**
 - `CitySightseeing`: City sightseeing suggestions
@@ -149,6 +156,7 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 | `/manage/cities` | `CityController` | City CRUD |
 | `/manage/venues` | `VenueController` | Venue CRUD |
 | `/manage/addresses` | `AddressController` | Address CRUD |
+| `/manage/prompts` | `PromptController` | Prompt management with versioning |
 | `/manage/projects` | `ProjectManagementController` | Project CRUD with version management |
 | `/manage/set-project` | `SetProjectController` | Set active project in session |
 | `/manage/project/{project}/travel` | `DayTravelManagementController` | Day travel CRUD |
@@ -172,6 +180,6 @@ CitySightseeing::make()
     ->call();
 ```
 
-### Blade View Prompts
-LLM prompts are Blade views in `resources/views/prompts/` with dynamic variables for city, date, activity type, etc.
+### Database Prompts
+LLM prompts are stored in the database as `Prompt` and `PromptVersion` records. Templates use Blade syntax and are rendered with `Blade::render()` using dynamic variables for city, date, activity type, etc. Prompts are versioned — edits create new immutable versions, and the active version can be reverted.
 

@@ -4,7 +4,10 @@ namespace App\Services\LLM\Generators;
 
 use App\Enums\LlmModels;
 use App\Models\LlmCall;
+use App\Models\Prompt;
+use App\Models\PromptVersion;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
 use Prism\Prism\Text\Response;
@@ -13,9 +16,9 @@ abstract class BaseLlmGenerator
 {
     protected LlmModels $usedLlmProviderName;
 
-    protected string $usedSystemPromptView;
+    protected PromptVersion $usedSystemPromptVersion;
 
-    protected string $usedPromptView;
+    protected PromptVersion $usedTaskPromptVersion;
 
     protected array $usedPromptArgs;
 
@@ -54,12 +57,12 @@ abstract class BaseLlmGenerator
         return LlmModels::OPEN_ROUTER_GOOGLE_GEMINI_2_5_FLASH;
     }
 
-    protected function systemPromptView()
+    protected function systemPromptSlug(): string
     {
-        return 'prompts.system.travel-agent';
+        return 'travel-agent-system';
     }
 
-    abstract protected function promptView(): string;
+    abstract protected function promptSlug(): string;
 
     protected function promptArgs()
     {
@@ -69,15 +72,21 @@ abstract class BaseLlmGenerator
     public function call(): self
     {
         $this->usedLlmProviderName = $this->llmProviderName();
-        $this->usedSystemPromptView = $this->systemPromptView();
-        $this->usedPromptView = $this->promptView();
         $this->usedPromptArgs = $this->promptArgs();
+
+        $systemPrompt = Prompt::where('slug', $this->systemPromptSlug())->with('activeVersion')->firstOrFail();
+        $taskPrompt = Prompt::where('slug', $this->promptSlug())->with('activeVersion')->firstOrFail();
+
+        $this->usedSystemPromptVersion = $systemPrompt->activeVersion;
+        $this->usedTaskPromptVersion = $taskPrompt->activeVersion;
+
+        $renderedSystemPrompt = Blade::render($this->usedSystemPromptVersion->content, []);
+        $renderedTaskPrompt = Blade::render($this->usedTaskPromptVersion->content, $this->usedPromptArgs);
 
         $projectedHashes = LlmCall::hashes(new LlmCall([
             'llm_provider_name' => $this->usedLlmProviderName,
-            'system_prompt_view' => $this->usedSystemPromptView,
-            'prompt_view' => $this->usedPromptView,
-            'prompt_args' => $this->usedPromptArgs,
+            'rendered_system_prompt' => $renderedSystemPrompt,
+            'rendered_task_prompt' => $renderedTaskPrompt,
         ]));
 
         if ($this->useCache) {
@@ -92,15 +101,15 @@ abstract class BaseLlmGenerator
 
         $this->response = Prism::text()
             ->using(Provider::OpenRouter, $this->usedLlmProviderName->value)
-            ->withSystemPrompt(view($this->usedSystemPromptView))
-            ->withPrompt(view($this->usedPromptView, $this->usedPromptArgs))
+            ->withSystemPrompt($renderedSystemPrompt)
+            ->withPrompt($renderedTaskPrompt)
             ->withMaxTokens(5000)
             ->withClientOptions([
                 'timeout' => 30,
             ])
             ->asText();
 
-        $this->store();
+        $this->store($renderedSystemPrompt, $renderedTaskPrompt);
 
         return $this;
     }
@@ -110,14 +119,16 @@ abstract class BaseLlmGenerator
      */
     abstract protected function syncToModels(): array;
 
-    protected function store()
+    protected function store(string $renderedSystemPrompt, string $renderedTaskPrompt): void
     {
         $this->llmCall = LlmCall::create([
             'llm_provider_name' => $this->usedLlmProviderName,
-            'system_prompt_view' => $this->usedSystemPromptView,
-            'prompt_view' => $this->usedPromptView,
+            'system_prompt_version_id' => $this->usedSystemPromptVersion->id,
+            'task_prompt_version_id' => $this->usedTaskPromptVersion->id,
             'prompt_args' => $this->usedPromptArgs,
             'response' => $this->response->text,
+            'rendered_system_prompt' => $renderedSystemPrompt,
+            'rendered_task_prompt' => $renderedTaskPrompt,
             'prompt_tokens' => $this->response->usage->promptTokens,
             'completion_tokens' => $this->response->usage->completionTokens,
         ]);

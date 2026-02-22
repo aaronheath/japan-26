@@ -1,17 +1,15 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "/Users/aaronheath/Library/Application",
+            "command": "/Users/aaronheath/Library/Application Support/Herd/bin/php84",
             "args": [
-                "Support/Herd/bin/php85",
                 "/Users/aaronheath/code/japan-26/artisan",
                 "boost:mcp"
             ]
         },
         "herd": {
-            "command": "/Users/aaronheath/Library/Application",
+            "command": "/Users/aaronheath/Library/Application Support/Herd/bin/php84",
             "args": [
-                "Support/Herd/bin/php85",
                 "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
             ],
             "env": {
