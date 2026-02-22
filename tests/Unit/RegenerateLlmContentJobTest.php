@@ -11,9 +11,8 @@ it('uses the Batchable trait', function () {
     expect($traits)->toContain(Batchable::class);
 });
 
-it('dispatches to the redis connection and llm-regeneration queue', function () {
+it('dispatches to the llm-regeneration queue', function () {
     $job = new RegenerateLlmContent(DayTravel::class, 1, TravelDomestic::class);
 
-    expect($job->connection)->toBe('redis')
-        ->and($job->queue)->toBe('llm-regeneration');
+    expect($job->queue)->toBe('llm-regeneration');
 });

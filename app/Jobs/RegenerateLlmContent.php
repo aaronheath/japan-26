@@ -30,7 +30,7 @@ class RegenerateLlmContent implements ShouldQueue
         public int $modelId,
         public string $generatorClass,
     ) {
-        $this->onConnection('redis')->onQueue('llm-regeneration');
+        $this->onQueue('llm-regeneration');
     }
 
     public function handle(): void
