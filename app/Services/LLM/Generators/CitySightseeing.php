@@ -35,9 +35,9 @@ class CitySightseeing extends BaseLlmGenerator
         return [$this->activity, $this->activity->useCity()];
     }
 
-    protected function promptView(): string
+    protected function promptSlug(): string
     {
-        return 'prompts.generators.city-sightseeing';
+        return 'city-sightseeing';
     }
 
     protected function promptArgs()

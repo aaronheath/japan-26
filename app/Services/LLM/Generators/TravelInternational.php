@@ -20,9 +20,9 @@ class TravelInternational extends BaseLlmGenerator
         return [$this->travel];
     }
 
-    protected function promptView(): string
+    protected function promptSlug(): string
     {
-        return 'prompts.generators.travel-international';
+        return 'travel-international';
     }
 
     protected function promptArgs(): array

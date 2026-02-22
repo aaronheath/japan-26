@@ -6,7 +6,12 @@ use App\Casts\SerializeArrayWithModels;
 use App\Enums\LlmModels;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string|null $rendered_system_prompt Virtual attribute for hash computation
+ * @property string|null $rendered_task_prompt Virtual attribute for hash computation
+ */
 class LlmCall extends Model
 {
     /** @use HasFactory<\Database\Factories\LlmCallFactory> */
@@ -20,18 +25,16 @@ class LlmCall extends Model
         ];
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(function ($model) {
-            $model = self::hashes($model);
-
-            return $model;
+            self::hashes($model);
+            unset($model->rendered_system_prompt, $model->rendered_task_prompt);
         });
 
         static::updating(function ($model) {
-            $model = self::hashes($model);
-
-            return $model;
+            self::hashes($model);
+            unset($model->rendered_system_prompt, $model->rendered_task_prompt);
         });
     }
 
@@ -40,26 +43,37 @@ class LlmCall extends Model
         return $this->morphedByMany(DayActivity::class, 'llm_callable');
     }
 
-    public static function hashes(LlmCall $model)
+    /**
+     * @return BelongsTo<PromptVersion, $this>
+     */
+    public function systemPromptVersion(): BelongsTo
     {
-        ray($model->toArray());
+        return $this->belongsTo(PromptVersion::class, 'system_prompt_version_id');
+    }
 
-        if (! is_null($model->system_prompt_view)) {
-            $model->system_prompt_hash = hash('sha256', view($model->system_prompt_view));
+    /**
+     * @return BelongsTo<PromptVersion, $this>
+     */
+    public function taskPromptVersion(): BelongsTo
+    {
+        return $this->belongsTo(PromptVersion::class, 'task_prompt_version_id');
+    }
+
+    public static function hashes(LlmCall $model): LlmCall
+    {
+        if (! is_null($model->rendered_system_prompt)) {
+            $model->system_prompt_hash = hash('sha256', $model->rendered_system_prompt);
         }
 
-        if (! is_null($model->prompt_view)) {
-            $model->prompt_hash = hash('sha256', view($model->prompt_view, $model->prompt_args ?? []));
+        if (! is_null($model->rendered_task_prompt)) {
+            $model->prompt_hash = hash('sha256', $model->rendered_task_prompt);
         }
-
-        //        if(! is_null($model->prompt_args)) {
-        //            $model->prompt_args_hash = hash('sha256', json_encode($model->prompt_args));
-        //        }
 
         if ($model->system_prompt_hash && $model->prompt_hash) {
             $llmProviderValue = $model->llm_provider_name instanceof LlmModels
                 ? $model->llm_provider_name->value
                 : $model->llm_provider_name;
+
             $model->overall_request_hash = hash('sha256', sprintf(
                 '%s---%s---%s',
                 $llmProviderValue,

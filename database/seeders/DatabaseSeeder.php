@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
         $this->statesAndCities();
         $this->wrestlingVenues();
         $this->japan26Project();
+
+        $this->call([PromptSeeder::class]);
     }
 
     protected function users()

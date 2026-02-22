@@ -26,6 +26,7 @@ import {
     Bed,
     Building2,
     CalendarDays,
+    FileText,
     FolderKanban,
     Globe,
     Hotel,
@@ -46,6 +47,7 @@ const manageNavItems: NavItem[] = [
     { title: 'Cities', href: '/manage/cities', icon: Building2 },
     { title: 'Venues', href: '/manage/venues', icon: Hotel },
     { title: 'Addresses', href: '/manage/addresses', icon: MapPinned },
+    { title: 'Prompts', href: '/manage/prompts', icon: FileText },
 ];
 
 export function AppSidebar() {

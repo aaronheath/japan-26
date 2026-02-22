@@ -20,9 +20,9 @@ class TravelDomestic extends BaseLlmGenerator
         return [$this->travel];
     }
 
-    protected function promptView(): string
+    protected function promptSlug(): string
     {
-        return 'prompts.generators.travel-domestic-japan';
+        return 'travel-domestic-japan';
     }
 
     protected function promptArgs(): array

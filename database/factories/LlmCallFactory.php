@@ -19,8 +19,6 @@ class LlmCallFactory extends Factory
     {
         return [
             'llm_provider_name' => fn () => fake()->randomElement(LlmModels::cases()),
-            'system_prompt_view' => fn () => 'prompts.testing.system',
-            'prompt_view' => fn () => 'prompts.testing.prompt',
             'prompt_args' => fn () => [],
             'response' => fn () => fake()->paragraphs(3, true),
             'overall_request_hash' => fn () => fake()->sha256(),
