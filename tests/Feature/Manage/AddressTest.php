@@ -208,6 +208,47 @@ it('can delete an address whose addressable no longer exists', function () {
     $this->assertDatabaseMissing('address', ['id' => $address->id]);
 });
 
+it('includes attached_to_url for addresses linked to venues', function () {
+    $user = User::factory()->create();
+    $venue = Venue::factory()->create();
+    $address = Address::factory()->create([
+        'addressable_type' => Venue::class,
+        'addressable_id' => $venue->id,
+        'country_id' => $venue->city->country_id,
+        'city_id' => $venue->city_id,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('manage.addresses.index'));
+
+    $response->assertOk();
+
+    $addresses = $response->original->getData()['page']['props']['addresses'];
+    $found = collect($addresses)->firstWhere('id', $address->id);
+
+    expect($found['attached_to_url'])->toBe(route('manage.venues.index', ['edit' => $venue->id]));
+});
+
+it('does not include attached_to_url for unattached addresses', function () {
+    $user = User::factory()->create();
+    $country = Country::factory()->create();
+    $city = City::factory()->create(['country_id' => $country->id]);
+    $address = Address::factory()->create([
+        'addressable_type' => null,
+        'addressable_id' => null,
+        'country_id' => $country->id,
+        'city_id' => $city->id,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('manage.addresses.index'));
+
+    $response->assertOk();
+
+    $addresses = $response->original->getData()['page']['props']['addresses'];
+    $found = collect($addresses)->firstWhere('id', $address->id);
+
+    expect($found['attached_to_url'])->toBeNull();
+});
+
 it('cannot delete an address that is attached to an entity', function () {
     $user = User::factory()->create();
     $venue = Venue::factory()->create();

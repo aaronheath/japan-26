@@ -34,6 +34,46 @@ class UpdateVenueRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'address.country_id' => [
+                'required',
+                'exists:countries,id',
+            ],
+            'address.state_id' => [
+                'nullable',
+                'exists:states,id',
+            ],
+            'address.city_id' => [
+                'required',
+                'exists:cities,id',
+            ],
+            'address.postcode' => [
+                'required',
+                'string',
+                'max:20',
+            ],
+            'address.line_1' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'address.line_2' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'address.line_3' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'address.latitude' => [
+                'nullable',
+                'numeric',
+            ],
+            'address.longitude' => [
+                'nullable',
+                'numeric',
+            ],
         ];
     }
 }

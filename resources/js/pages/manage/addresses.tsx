@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Form, Head, router, usePage } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -29,6 +29,7 @@ interface Address {
     state_name: string | null;
     city_name: string;
     attached_to: string | null;
+    attached_to_url: string | null;
 }
 
 interface Country {
@@ -61,7 +62,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Addresses({ addresses, countries: initialCountries, states: initialStates, cities: initialCities }: AddressesProps) {
+export default function Addresses({
+    addresses,
+    countries: initialCountries,
+    states: initialStates,
+    cities: initialCities,
+}: AddressesProps) {
     const { googleMapsApiKey } = usePage<SharedData>().props;
 
     const [countries, setCountries] = useState(initialCountries);
@@ -304,7 +310,9 @@ export default function Addresses({ addresses, countries: initialCountries, stat
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium">Address Lookup</h4>
                         <AddressLookup onSelect={handleCreateLookupSelect} />
-                        <p className="text-muted-foreground text-xs">Search for an address to auto-fill the form below</p>
+                        <p className="text-xs text-muted-foreground">
+                            Search for an address to auto-fill the form below
+                        </p>
                     </div>
 
                     <Form
@@ -457,7 +465,18 @@ export default function Addresses({ addresses, countries: initialCountries, stat
                                                 <td className="px-4 py-3">{address.state_name ?? '-'}</td>
                                                 <td className="px-4 py-3">{address.country_name}</td>
                                                 <td className="px-4 py-3">{address.postcode ?? '-'}</td>
-                                                <td className="px-4 py-3">{address.attached_to ?? '-'}</td>
+                                                <td className="px-4 py-3">
+                                                    {address.attached_to && address.attached_to_url ? (
+                                                        <Link
+                                                            href={address.attached_to_url}
+                                                            className="text-blue-600 hover:underline dark:text-blue-400"
+                                                        >
+                                                            {address.attached_to}
+                                                        </Link>
+                                                    ) : (
+                                                        (address.attached_to ?? '-')
+                                                    )}
+                                                </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <div className="flex justify-end gap-1">
                                                         <Button
