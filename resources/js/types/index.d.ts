@@ -32,6 +32,7 @@ export interface SharedData {
     sidebarOpen: boolean;
     projects: SimpleProject[];
     selectedProjectId: number;
+    googleMapsApiKey?: string;
     [key: string]: unknown;
 }
 

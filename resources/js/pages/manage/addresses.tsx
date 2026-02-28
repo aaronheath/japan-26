@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -62,6 +62,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Addresses({ addresses, countries: initialCountries, states: initialStates, cities: initialCities }: AddressesProps) {
+    const { googleMapsApiKey } = usePage<SharedData>().props;
+
     const [countries, setCountries] = useState(initialCountries);
     const [states, setStates] = useState(initialStates);
     const [cities, setCities] = useState(initialCities);
@@ -593,6 +595,30 @@ export default function Addresses({ addresses, countries: initialCountries, stat
                             />
                             <InputError message={editErrors.line_3} />
                         </div>
+
+                        {(editLatitude || editLongitude) && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label>Latitude</Label>
+                                        <p className="text-sm text-muted-foreground">{editLatitude || '—'}</p>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Longitude</Label>
+                                        <p className="text-sm text-muted-foreground">{editLongitude || '—'}</p>
+                                    </div>
+                                </div>
+
+                                {googleMapsApiKey && editLatitude && editLongitude && (
+                                    <iframe
+                                        className="h-[200px] w-full rounded-md border-0"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        src={`https://www.google.com/maps/embed/v1/place?key=${googleMapsApiKey}&q=${editLatitude},${editLongitude}&zoom=15`}
+                                    />
+                                )}
+                            </>
+                        )}
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>

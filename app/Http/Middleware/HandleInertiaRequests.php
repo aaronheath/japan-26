@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'projects' => fn () => Project::query()->orderBy('name')->get(['id', 'name']),
             'selectedProjectId' => fn () => $request->session()->get('selected_project_id', 1),
+            'googleMapsApiKey' => config('services.google_places.api_key'),
             'flash' => [
                 'generated_password' => fn () => $request->session()->get('generated_password'),
             ],
