@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, router } from '@inertiajs/react';
@@ -140,7 +141,7 @@ export default function Projects({ projects }: ProjectsProps) {
                                         <div className="flex flex-col gap-1">
                                             <span className="text-sm font-medium">{project.name}</span>
                                             <span className="text-xs text-muted-foreground">
-                                                {project.start_date} to {project.end_date} ({project.duration} days,{' '}
+                                                {formatDate(project.start_date)} to {formatDate(project.end_date)} ({project.duration} days,{' '}
                                                 {project.versions_count} version{project.versions_count !== 1 && 's'})
                                             </span>
                                         </div>

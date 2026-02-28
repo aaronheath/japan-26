@@ -2,6 +2,7 @@ import { RegenerateButton } from '@/components/regenerate-button';
 import { RegenerationConfirmDialog } from '@/components/regeneration-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/lib/utils';
 import { show as showProject } from '@/routes/project';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -124,6 +125,7 @@ export default function ProjectShow({ project, days, activityTypes }: ProjectSho
                                         >
                                             Day {day.number}
                                         </Link>
+                                        <span className="text-muted-foreground"> - {formatDate(day.date)}</span>
                                     </td>
                                     <td className="px-3 py-2">
                                         {day.travel ? (
