@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, router } from '@inertiajs/react';
@@ -105,7 +106,7 @@ export default function Activities({ project, days, cities, venues, activityType
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <span className="text-sm font-medium">Day {day.number}</span>
-                                        <span className="ml-2 text-xs text-muted-foreground">{day.date}</span>
+                                        <span className="ml-2 text-xs text-muted-foreground">{formatDate(day.date)}</span>
                                         <span className="ml-2 text-xs text-muted-foreground">
                                             ({day.activities.length} activit{day.activities.length === 1 ? 'y' : 'ies'})
                                         </span>

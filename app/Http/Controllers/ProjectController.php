@@ -49,7 +49,7 @@ class ProjectController extends Controller
         return [
             'id' => $day->id,
             'number' => $day->number,
-            'date' => $day->date,
+            'date' => $day->date->format('Y-m-d'),
             'travel' => $day->travel ? [
                 'id' => $day->travel->id,
                 'hasLlmCall' => $day->travel->latestLlmCall() !== null,

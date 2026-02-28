@@ -21,7 +21,11 @@ class DayController extends Controller
         return Inertia::render('project/day', [
             'project' => $project,
             'tab' => request()->query('tab', 'overview'),
-            'day' => $this->day,
+            'day' => [
+                'id' => $this->day->id,
+                'number' => $this->day->number,
+                'date' => $this->day->date->format('Y-m-d'),
+            ],
             'travel' => $this->travel(),
             'activities' => $this->activities(),
         ]);

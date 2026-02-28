@@ -32,6 +32,26 @@ export function getApiHeaders(): HeadersInit {
     };
 }
 
+export function formatDate(dateString: string): string {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: '2-digit',
+        timeZone: 'UTC',
+    }).formatToParts(date);
+
+    const weekday = parts.find((p) => p.type === 'weekday')?.value;
+    const dayNum = parts.find((p) => p.type === 'day')?.value;
+    const monthStr = parts.find((p) => p.type === 'month')?.value;
+    const yearStr = parts.find((p) => p.type === 'year')?.value;
+
+    return `${weekday} ${dayNum} ${monthStr} '${yearStr}`;
+}
+
 export function formatLocalDateTime(utcTimestamp: string): string {
     const date = new Date(utcTimestamp);
 

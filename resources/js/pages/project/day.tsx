@@ -2,6 +2,7 @@ import { LlmMetadata } from '@/components/llm-metadata';
 import { RegenerateButton } from '@/components/regenerate-button';
 import { Markdown } from '@/components/ui/markdown';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/lib/utils';
 import { show as showProject } from '@/routes/project';
 import { show as showDay } from '@/routes/project/day';
 import { type BreadcrumbItem } from '@/types';
@@ -78,10 +79,10 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${project.name} - Day ${day.number}`} />
+            <Head title={`${project.name} - Day ${day.number} - ${formatDate(day.date)}`} />
 
             <div className="p-4">
-                <h1 className="mb-4 text-xl font-bold">Day {day.number}</h1>
+                <h1 className="mb-4 text-xl font-bold">Day {day.number} - {formatDate(day.date)}</h1>
 
                 <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1">
                     <Link
