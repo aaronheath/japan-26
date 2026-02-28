@@ -31,6 +31,8 @@ class AddressController extends Controller
                     'country_id' => $address->country_id,
                     'state_id' => $address->state_id,
                     'city_id' => $address->city_id,
+                    'latitude' => $address->latitude,
+                    'longitude' => $address->longitude,
                     'country_name' => $address->country->name,
                     'state_name' => $address->state?->name,
                     'city_name' => $address->city->name,

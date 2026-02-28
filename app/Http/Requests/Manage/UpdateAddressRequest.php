@@ -55,6 +55,16 @@ class UpdateAddressRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'latitude' => [
+                'nullable',
+                'numeric',
+                'between:-90,90',
+            ],
+            'longitude' => [
+                'nullable',
+                'numeric',
+                'between:-180,180',
+            ],
         ];
     }
 }

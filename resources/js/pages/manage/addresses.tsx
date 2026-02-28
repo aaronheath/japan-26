@@ -1,4 +1,5 @@
 import AddressController from '@/actions/App/Http/Controllers/Manage/AddressController';
+import AddressLookup from '@/components/address-lookup';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -19,6 +20,8 @@ interface Address {
     line_2: string | null;
     line_3: string | null;
     postcode: string | null;
+    latitude: number | null;
+    longitude: number | null;
     country_id: number;
     state_id: number | null;
     city_id: number;
@@ -58,7 +61,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Addresses({ addresses, countries, states, cities }: AddressesProps) {
+export default function Addresses({ addresses, countries: initialCountries, states: initialStates, cities: initialCities }: AddressesProps) {
+    const { googleMapsApiKey } = usePage<SharedData>().props;
+
+    const [countries, setCountries] = useState(initialCountries);
+    const [states, setStates] = useState(initialStates);
+    const [cities, setCities] = useState(initialCities);
+
     const [editOpen, setEditOpen] = useState(false);
     const [editAddress, setEditAddress] = useState<Address | null>(null);
     const [editCountryId, setEditCountryId] = useState('');
@@ -68,9 +77,13 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
     const [editLine1, setEditLine1] = useState('');
     const [editLine2, setEditLine2] = useState('');
     const [editLine3, setEditLine3] = useState('');
+    const [editLatitude, setEditLatitude] = useState('');
+    const [editLongitude, setEditLongitude] = useState('');
     const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
     const [createCountryId, setCreateCountryId] = useState('');
+    const [createLatitude, setCreateLatitude] = useState('');
+    const [createLongitude, setCreateLongitude] = useState('');
 
     const filteredStatesForCreate = useMemo(
         () => (createCountryId ? states.filter((s) => s.country_id === Number(createCountryId)) : states),
@@ -97,6 +110,8 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
         setEditLine1(address.line_1);
         setEditLine2(address.line_2 ?? '');
         setEditLine3(address.line_3 ?? '');
+        setEditLatitude(address.latitude != null ? String(address.latitude) : '');
+        setEditLongitude(address.longitude != null ? String(address.longitude) : '');
         setEditErrors({});
         setEditOpen(true);
     };
@@ -118,6 +133,8 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
                 line_1: editLine1,
                 line_2: editLine2 || null,
                 line_3: editLine3 || null,
+                latitude: editLatitude || null,
+                longitude: editLongitude || null,
             },
             {
                 preserveScroll: true,
@@ -149,6 +166,8 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
         });
 
         setCreateCountryId('');
+        setCreateLatitude('');
+        setCreateLongitude('');
     };
 
     const handleCreateCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -166,6 +185,114 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
         setEditStateId('');
     };
 
+    const mergeGeoRecords = (details: {
+        country: { id: number; name: string } | null;
+        state: { id: number; name: string; country_id: number } | null;
+        city: { id: number; name: string } | null;
+    }) => {
+        if (details.country && !countries.find((c) => c.id === details.country!.id)) {
+            setCountries((prev) => [...prev, details.country!].sort((a, b) => a.name.localeCompare(b.name)));
+        }
+
+        if (details.state && !states.find((s) => s.id === details.state!.id)) {
+            setStates((prev) => [...prev, details.state!].sort((a, b) => a.name.localeCompare(b.name)));
+        }
+
+        if (details.city && !cities.find((c) => c.id === details.city!.id)) {
+            setCities((prev) => [...prev, details.city!].sort((a, b) => a.name.localeCompare(b.name)));
+        }
+    };
+
+    const handleCreateLookupSelect = (details: {
+        line_1: string;
+        line_2: string | null;
+        line_3: string | null;
+        postcode: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        country_id: number | null;
+        state_id: number | null;
+        city_id: number | null;
+        country: { id: number; name: string } | null;
+        state: { id: number; name: string; country_id: number } | null;
+        city: { id: number; name: string } | null;
+    }) => {
+        mergeGeoRecords(details);
+
+        const setNativeValue = (id: string, value: string) => {
+            const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+
+            if (el) {
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    id.includes('_id') ? HTMLSelectElement.prototype : HTMLInputElement.prototype,
+                    'value',
+                )?.set;
+
+                nativeInputValueSetter?.call(el, value);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+
+        if (details.country_id) {
+            setCreateCountryId(String(details.country_id));
+            setNativeValue('country_id', String(details.country_id));
+        }
+
+        setTimeout(() => {
+            if (details.state_id) {
+                setNativeValue('state_id', String(details.state_id));
+            }
+
+            if (details.city_id) {
+                setNativeValue('city_id', String(details.city_id));
+            }
+
+            setNativeValue('postcode', details.postcode ?? '');
+            setNativeValue('line_1', details.line_1 ?? '');
+            setNativeValue('line_2', details.line_2 ?? '');
+            setNativeValue('line_3', details.line_3 ?? '');
+            setCreateLatitude(details.latitude != null ? String(details.latitude) : '');
+            setCreateLongitude(details.longitude != null ? String(details.longitude) : '');
+        }, 0);
+    };
+
+    const handleEditLookupSelect = (details: {
+        line_1: string;
+        line_2: string | null;
+        line_3: string | null;
+        postcode: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        country_id: number | null;
+        state_id: number | null;
+        city_id: number | null;
+        country: { id: number; name: string } | null;
+        state: { id: number; name: string; country_id: number } | null;
+        city: { id: number; name: string } | null;
+    }) => {
+        mergeGeoRecords(details);
+
+        if (details.country_id) {
+            setEditCountryId(String(details.country_id));
+        }
+
+        if (details.state_id) {
+            setEditStateId(String(details.state_id));
+        }
+
+        if (details.city_id) {
+            setEditCityId(String(details.city_id));
+        }
+
+        setEditPostcode(details.postcode ?? '');
+        setEditLine1(details.line_1 ?? '');
+        setEditLine2(details.line_2 ?? '');
+        setEditLine3(details.line_3 ?? '');
+        setEditLatitude(details.latitude != null ? String(details.latitude) : '');
+        setEditLongitude(details.longitude != null ? String(details.longitude) : '');
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Addresses" />
@@ -173,6 +300,12 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-2xl space-y-6">
                     <HeadingSmall title="Addresses" description="Manage addresses for your travel plans" />
+
+                    <div className="space-y-2">
+                        <h4 className="text-sm font-medium">Address Lookup</h4>
+                        <AddressLookup onSelect={handleCreateLookupSelect} />
+                        <p className="text-muted-foreground text-xs">Search for an address to auto-fill the form below</p>
+                    </div>
 
                     <Form
                         action={AddressController.store.url()}
@@ -278,6 +411,9 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
                                     <InputError message={errors.line_3} />
                                 </div>
 
+                                <input type="hidden" name="latitude" value={createLatitude} />
+                                <input type="hidden" name="longitude" value={createLongitude} />
+
                                 <Button type="submit" disabled={processing}>
                                     Add Address
                                 </Button>
@@ -357,6 +493,8 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
                         <DialogTitle>Edit Address</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdate} className="space-y-4">
+                        <AddressLookup onSelect={handleEditLookupSelect} />
+
                         <div className="grid grid-cols-3 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="edit-country_id">Country</Label>
@@ -457,6 +595,30 @@ export default function Addresses({ addresses, countries, states, cities }: Addr
                             />
                             <InputError message={editErrors.line_3} />
                         </div>
+
+                        {(editLatitude || editLongitude) && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label>Latitude</Label>
+                                        <p className="text-sm text-muted-foreground">{editLatitude || '—'}</p>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Longitude</Label>
+                                        <p className="text-sm text-muted-foreground">{editLongitude || '—'}</p>
+                                    </div>
+                                </div>
+
+                                {googleMapsApiKey && editLatitude && editLongitude && (
+                                    <iframe
+                                        className="h-[200px] w-full rounded-md border-0"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        src={`https://www.google.com/maps/embed/v1/place?key=${googleMapsApiKey}&q=${editLatitude},${editLongitude}&zoom=15`}
+                                    />
+                                )}
+                            </>
+                        )}
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
