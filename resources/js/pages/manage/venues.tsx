@@ -12,7 +12,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, router, usePage } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface VenueAddress {
     id: number;
@@ -125,6 +125,33 @@ export default function Venues({
         () => (editAddrCountryId ? states.filter((s) => s.country_id === Number(editAddrCountryId)) : states),
         [editAddrCountryId, states],
     );
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const editId = params.get('edit');
+
+        if (editId) {
+            const venue = venues.find((v) => v.id === Number(editId));
+
+            if (venue) {
+                openEdit(venue);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (editOpen) {
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.has('edit')) {
+            params.delete('edit');
+            const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        }
+    }, [editOpen]);
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this venue?')) {

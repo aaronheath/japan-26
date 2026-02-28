@@ -37,7 +37,9 @@ class AddressController extends Controller
                     'state_name' => $address->state?->name,
                     'city_name' => $address->city->name,
                     'attached_to' => $address->addressable ? class_basename($address->addressable).': '.($address->addressable->name ?? $address->addressable->getKey()) : null,
-                    'attached_to_url' => $address->addressable instanceof \App\Models\Venue ? route('manage.venues.index') : null,
+                    'attached_to_url' => $address->addressable instanceof \App\Models\Venue
+                        ? route('manage.venues.index', ['edit' => $address->addressable->getKey()])
+                        : null,
                 ]),
             'countries' => Country::query()->orderBy('name')->get(['id', 'name']),
             'states' => State::query()->orderBy('name')->get(['id', 'name', 'country_id']),

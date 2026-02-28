@@ -225,7 +225,7 @@ it('includes attached_to_url for addresses linked to venues', function () {
     $addresses = $response->original->getData()['page']['props']['addresses'];
     $found = collect($addresses)->firstWhere('id', $address->id);
 
-    expect($found['attached_to_url'])->toBe(route('manage.venues.index'));
+    expect($found['attached_to_url'])->toBe(route('manage.venues.index', ['edit' => $venue->id]));
 });
 
 it('does not include attached_to_url for unattached addresses', function () {
