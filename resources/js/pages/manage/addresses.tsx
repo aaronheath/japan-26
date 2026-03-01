@@ -304,7 +304,7 @@ export default function Addresses({
             <Head title="Addresses" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Addresses" description="Manage addresses for your travel plans" />
 
                     <div className="space-y-2">

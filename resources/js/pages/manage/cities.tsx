@@ -157,7 +157,7 @@ export default function Cities({ cities, countries, states }: CitiesProps) {
             <Head title="Cities" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Cities" description="Manage cities for your travel plans" />
 
                     <Form

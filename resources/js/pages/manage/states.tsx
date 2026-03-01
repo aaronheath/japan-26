@@ -95,7 +95,7 @@ export default function States({ states, countries }: StatesProps) {
             <Head title="States" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="States" description="Manage states and prefectures for your travel plans" />
 
                     <Form
