@@ -97,7 +97,7 @@ export default function Activities({ project, days, cities, venues, activityType
             <Head title={`${project.name} - Activities`} />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Day Activities" description={`Manage activities for ${project.name}`} />
 
                     <div className="space-y-2">

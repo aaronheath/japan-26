@@ -81,7 +81,7 @@ export default function Accommodations({ project, days, venues }: Accommodations
             <Head title={`${project.name} - Accommodations`} />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall
                         title="Day Accommodations"
                         description={`Manage accommodations for ${project.name}`}

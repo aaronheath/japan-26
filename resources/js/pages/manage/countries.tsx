@@ -80,7 +80,7 @@ export default function Countries({ countries }: CountriesProps) {
             <Head title="Countries" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Countries" description="Manage countries for your travel plans" />
 
                     <Form

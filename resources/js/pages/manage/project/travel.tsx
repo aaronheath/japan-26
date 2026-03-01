@@ -91,7 +91,7 @@ export default function Travel({ project, days, cities }: TravelProps) {
             <Head title={`${project.name} - Travel`} />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Day Travel" description={`Manage travel for ${project.name}`} />
 
                     <div className="space-y-2">

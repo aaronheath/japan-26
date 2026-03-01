@@ -381,7 +381,7 @@ export default function Venues({
             <Head title="Venues" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-2xl space-y-6">
+                <div className="mx-auto max-w-5xl space-y-6">
                     <HeadingSmall title="Venues" description="Manage venues for your travel plans" />
 
                     <Form
