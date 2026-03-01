@@ -21,10 +21,11 @@ app/
 ├── Enums/               # DayActivities, LlmModels, PromptType, VenueType
 ├── Http/
 │   ├── Controllers/     # ProjectController, DayController, Settings
-│   │   ├── Api/         # AddressLookupController, RegenerationController
+│   │   ├── Api/         # AddressLookupController, GenerationController, RegenerationController
 │   │   └── Manage/      # CRUD management controllers (Countries, States, Cities, Venues, Addresses, Projects, Prompts, DayTravel, DayAccommodation, DayActivity)
 │   ├── Middleware/      # Inertia, Appearance handling
 │   └── Requests/
+│       ├── Api/         # API form requests (GenerateFromDayRequest)
 │       └── Manage/      # Form request validation for management controllers
 ├── Models/              # Eloquent models (see Domain Models below)
 ├── Providers/           # AppServiceProvider, FortifyServiceProvider
@@ -43,6 +44,7 @@ resources/js/
 ├── actions/             # Wayfinder-generated TypeScript route actions
 ├── components/
 │   ├── address-lookup.tsx  # Google Places address autocomplete
+│   ├── day/             # Day page sub-components (results-card, prompt-details-card, generate-card)
 │   └── ui/              # Shadcn/Radix UI components
 ├── hooks/               # Custom React hooks
 ├── layouts/             # App, Auth, Settings layouts
@@ -61,7 +63,7 @@ resources/js/
 |-------|---------|-------------------|
 | `Project` | Complete trip with dates | Has many `ProjectVersion` |
 | `ProjectVersion` | Versioned itinerary snapshot | Has many `Day` |
-| `Day` | Single day in itinerary | Has one `DayTravel`, many `DayActivity`, one `DayAccommodation` |
+| `Day` | Single day in itinerary | Has one `DayTravel`, many `DayActivity`, one `DayAccommodation`, many `Prompt` (supplementary) |
 | `DayTravel` | City-to-city movement | Belongs to start/end `City` |
 | `DayActivity` | Activity during a day | Belongs to `Venue` or `City` |
 | `DayAccommodation` | Lodging for a day | Belongs to `Venue` |
@@ -80,14 +82,14 @@ resources/js/
 
 | Model | Purpose | Key Relationships |
 |-------|---------|-------------------|
-| `Prompt` | Prompt entity with slug, type, and active version | Has many `PromptVersion`, belongs to self (system prompt) |
+| `Prompt` | Prompt entity with slug, type, and active version | Has many `PromptVersion`, belongs to self (system prompt), optional `Day` and `parentPrompt` for supplementary prompts |
 | `PromptVersion` | Immutable versioned prompt content | Belongs to `Prompt` |
 
 ### AI Interactions
 
 | Model | Purpose |
 |-------|---------|
-| `LlmCall` | Stores every LLM API call with prompt version references, responses, and token counts |
+| `LlmCall` | Stores every LLM API call with prompt version references (system, task, supplementary), responses, and token counts |
 
 ## LLM Service Architecture
 
@@ -102,10 +104,13 @@ resources/js/
 - Base class for all LLM generators
 - Manages Prism integration with caching via hash comparison
 - Loads prompt templates from database (`Prompt`/`PromptVersion` models) and renders with `Blade::render()`
+- Supports supplementary prompts per-day via `forDay()` method
 - Stores `LlmCall` records with prompt version references and token counts
 
 **Concrete Generators**
-- `CitySightseeing`: City sightseeing suggestions
+- `Sightseeing`: City sightseeing suggestions
+- `Wrestling`: Wrestling event and venue recommendations
+- `Eating`: Restaurant and dining recommendations
 - `TravelDomestic`: Domestic Japan travel recommendations
 - `TravelInternational`: International flight suggestions
 
@@ -170,6 +175,7 @@ Models that receive LLM-generated content use the `LlmCallable` trait:
 | `/manage/project/{project}/activities` | `DayActivityManagementController` | Day activity CRUD |
 | `/api/address-lookup/autocomplete` | `AddressLookupController` | Google Places autocomplete |
 | `/api/address-lookup/place/{placeId}` | `AddressLookupController` | Google Place details with geo record creation |
+| `/api/generation/project/{project}/day/{day}` | `GenerationController` | Generate LLM content with prompt editing |
 
 ## Key Patterns
 
@@ -183,13 +189,17 @@ GenerateRequiredLLMInteractions::make()
 
 ### Generator Pattern
 ```php
-CitySightseeing::make()
+Sightseeing::make()
     ->activity($dayActivity)
+    ->forDay($day)
     ->call();
 ```
 
 ### Database Prompts
 LLM prompts are stored in the database as `Prompt` and `PromptVersion` records. Templates use Blade syntax and are rendered with `Blade::render()` using dynamic variables for city, date, activity type, etc. Prompts are versioned — edits create new immutable versions, and the active version can be reverted.
+
+### Supplementary Prompts
+Supplementary prompts allow per-day customization of task prompts. They are `Prompt` records with type `supplementary`, linked to a specific `Day` and `parentPrompt`. The composite unique index on `(day_id, parent_prompt_id)` ensures one supplementary prompt per day per task type. Supplementary content is appended to the task prompt when generating LLM content.
 
 === .ai/overview rules ===
 

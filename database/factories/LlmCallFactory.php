@@ -25,6 +25,8 @@ class LlmCallFactory extends Factory
             'system_prompt_hash' => fn () => fake()->sha256(),
             'prompt_hash' => fn () => fake()->sha256(),
             'response_hash' => fn () => fake()->sha256(),
+            'supplementary_prompt_version_id' => fn () => null,
+            'supplementary_prompt_hash' => fn () => null,
             'prompt_tokens' => fn () => fake()->numberBetween(100, 1000),
             'completion_tokens' => fn () => fake()->numberBetween(100, 500),
         ];

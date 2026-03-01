@@ -10,9 +10,11 @@ use App\Models\DayActivity;
 use App\Models\DayTravel;
 use App\Models\LlmRegenerationBatch;
 use App\Models\Project;
-use App\Services\LLM\Generators\CitySightseeing;
+use App\Services\LLM\Generators\Eating;
+use App\Services\LLM\Generators\Sightseeing;
 use App\Services\LLM\Generators\TravelDomestic;
 use App\Services\LLM\Generators\TravelInternational;
+use App\Services\LLM\Generators\Wrestling;
 use Illuminate\Support\Facades\Bus;
 
 class RegenerationService
@@ -200,10 +202,14 @@ class RegenerationService
     }
 
     /**
-     * @return class-string<CitySightseeing>
+     * @return class-string<Sightseeing|Wrestling|Eating>
      */
     protected function getActivityGeneratorClass(DayActivity $activity): string
     {
-        return CitySightseeing::class;
+        return match ($activity->type) {
+            DayActivities::SIGHTSEEING => Sightseeing::class,
+            DayActivities::WRESTLING => Wrestling::class,
+            DayActivities::EATING => Eating::class,
+        };
     }
 }

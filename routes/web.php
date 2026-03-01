@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WhitelistedEmailController;
 use App\Http\Controllers\Api\AddressLookupController;
+use App\Http\Controllers\Api\GenerationController;
 use App\Http\Controllers\Api\RegenerationController;
 use App\Http\Controllers\Api\RegenerationStatusController;
 use App\Http\Controllers\DayController;
@@ -71,6 +72,9 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::get('autocomplete', [AddressLookupController::class, 'autocomplete'])->name('api.address-lookup.autocomplete');
         Route::get('place/{placeId}', [AddressLookupController::class, 'placeDetails'])->name('api.address-lookup.place-details');
     });
+
+    Route::post('api/generation/project/{project}/day/{day}', [GenerationController::class, 'generate'])
+        ->name('api.generation.generate');
 
     Route::group(['prefix' => 'api/regeneration'], function () {
         Route::post('project/{project}/single', [RegenerationController::class, 'single'])->name('api.regeneration.single');

@@ -55,4 +55,12 @@ class Day extends Model
     {
         return $this->hasMany(DayActivity::class);
     }
+
+    /**
+     * @return HasMany<Prompt, $this>
+     */
+    public function supplementaryPrompts(): HasMany
+    {
+        return $this->hasMany(Prompt::class);
+    }
 }
