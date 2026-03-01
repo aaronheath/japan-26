@@ -3,6 +3,8 @@
 namespace App\Services\LLM\Generators;
 
 use App\Enums\LlmModels;
+use App\Enums\PromptType;
+use App\Models\Day;
 use App\Models\LlmCall;
 use App\Models\Prompt;
 use App\Models\PromptVersion;
@@ -20,6 +22,8 @@ abstract class BaseLlmGenerator
 
     protected PromptVersion $usedTaskPromptVersion;
 
+    protected ?PromptVersion $usedSupplementaryPromptVersion = null;
+
     protected array $usedPromptArgs;
 
     protected bool $useCache = true;
@@ -30,29 +34,38 @@ abstract class BaseLlmGenerator
 
     protected ?string $responseText = null;
 
+    protected ?Day $day = null;
+
     public static function make(): static
     {
         return new static; // @phpstan-ignore new.static
     }
 
-    public function dontUseCache()
+    public function dontUseCache(): static
     {
         $this->useCache = false;
 
         return $this;
     }
 
-    public function response()
+    public function forDay(Day $day): static
+    {
+        $this->day = $day;
+
+        return $this;
+    }
+
+    public function response(): ?Response
     {
         return $this->response;
     }
 
-    public function responseAsText()
+    public function responseAsText(): ?string
     {
         return $this->llmCall->response;
     }
 
-    protected function llmProviderName()
+    protected function llmProviderName(): LlmModels
     {
         return LlmModels::OPEN_ROUTER_GOOGLE_GEMINI_2_5_FLASH;
     }
@@ -64,7 +77,7 @@ abstract class BaseLlmGenerator
 
     abstract protected function promptSlug(): string;
 
-    protected function promptArgs()
+    protected function promptArgs(): array
     {
         return [];
     }
@@ -83,10 +96,17 @@ abstract class BaseLlmGenerator
         $renderedSystemPrompt = Blade::render($this->usedSystemPromptVersion->content, []);
         $renderedTaskPrompt = Blade::render($this->usedTaskPromptVersion->content, $this->usedPromptArgs);
 
+        $renderedSupplementaryPrompt = $this->resolveSupplementaryPrompt($taskPrompt);
+
+        $fullTaskPrompt = $renderedSupplementaryPrompt
+            ? $renderedTaskPrompt."\n\n".$renderedSupplementaryPrompt
+            : $renderedTaskPrompt;
+
         $projectedHashes = LlmCall::hashes(new LlmCall([
             'llm_provider_name' => $this->usedLlmProviderName,
             'rendered_system_prompt' => $renderedSystemPrompt,
             'rendered_task_prompt' => $renderedTaskPrompt,
+            'rendered_supplementary_prompt' => $renderedSupplementaryPrompt,
         ]));
 
         if ($this->useCache) {
@@ -102,14 +122,14 @@ abstract class BaseLlmGenerator
         $this->response = Prism::text()
             ->using(Provider::OpenRouter, $this->usedLlmProviderName->value)
             ->withSystemPrompt($renderedSystemPrompt)
-            ->withPrompt($renderedTaskPrompt)
+            ->withPrompt($fullTaskPrompt)
             ->withMaxTokens(5000)
             ->withClientOptions([
                 'timeout' => 30,
             ])
             ->asText();
 
-        $this->store($renderedSystemPrompt, $renderedTaskPrompt);
+        $this->store($renderedSystemPrompt, $renderedTaskPrompt, $renderedSupplementaryPrompt);
 
         return $this;
     }
@@ -119,16 +139,40 @@ abstract class BaseLlmGenerator
      */
     abstract protected function syncToModels(): array;
 
-    protected function store(string $renderedSystemPrompt, string $renderedTaskPrompt): void
+    protected function resolveSupplementaryPrompt(Prompt $taskPrompt): ?string
+    {
+        if (! $this->day) {
+            return null;
+        }
+
+        $supplementary = Prompt::query()
+            ->where('type', PromptType::Supplementary)
+            ->where('day_id', $this->day->id)
+            ->where('parent_prompt_id', $taskPrompt->id)
+            ->with('activeVersion')
+            ->first();
+
+        if (! $supplementary || ! $supplementary->activeVersion) {
+            return null;
+        }
+
+        $this->usedSupplementaryPromptVersion = $supplementary->activeVersion;
+
+        return Blade::render($this->usedSupplementaryPromptVersion->content, $this->usedPromptArgs);
+    }
+
+    protected function store(string $renderedSystemPrompt, string $renderedTaskPrompt, ?string $renderedSupplementaryPrompt = null): void
     {
         $this->llmCall = LlmCall::create([
             'llm_provider_name' => $this->usedLlmProviderName,
             'system_prompt_version_id' => $this->usedSystemPromptVersion->id,
             'task_prompt_version_id' => $this->usedTaskPromptVersion->id,
+            'supplementary_prompt_version_id' => $this->usedSupplementaryPromptVersion?->id,
             'prompt_args' => $this->usedPromptArgs,
             'response' => $this->response->text,
             'rendered_system_prompt' => $renderedSystemPrompt,
             'rendered_task_prompt' => $renderedTaskPrompt,
+            'rendered_supplementary_prompt' => $renderedSupplementaryPrompt,
             'prompt_tokens' => $this->response->usage->promptTokens,
             'completion_tokens' => $this->response->usage->completionTokens,
         ]);

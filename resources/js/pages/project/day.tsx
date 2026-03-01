@@ -1,6 +1,6 @@
-import { LlmMetadata } from '@/components/llm-metadata';
-import { RegenerateButton } from '@/components/regenerate-button';
-import { Markdown } from '@/components/ui/markdown';
+import { GenerateCard } from '@/components/day/generate-card';
+import { PromptDetailsCard } from '@/components/day/prompt-details-card';
+import { ResultsCard } from '@/components/day/results-card';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/utils';
 import { show as showProject } from '@/routes/project';
@@ -55,15 +55,32 @@ interface Activity {
     llm_call: LlmCall | null;
 }
 
+interface PromptData {
+    task_prompt_slug: string;
+    system_prompt_content?: string | null;
+    task_prompt_content: string;
+    supplementary_content?: string | null;
+}
+
 interface DayPageProps {
     project: Project;
     day: Day;
     tab: string;
     travel: Travel | Record<string, never>;
     activities: Activity[];
+    travelPromptData: PromptData | null;
+    activityPromptData: Record<number, PromptData>;
 }
 
-export default function DayPage({ project, day, tab, travel, activities }: DayPageProps) {
+export default function DayPage({
+    project,
+    day,
+    tab,
+    travel,
+    activities,
+    travelPromptData,
+    activityPromptData,
+}: DayPageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: project.name,
@@ -82,115 +99,160 @@ export default function DayPage({ project, day, tab, travel, activities }: DayPa
             <Head title={`${project.name} - Day ${day.number} - ${formatDate(day.date)}`} />
 
             <div className="p-4">
-                <h1 className="mb-4 text-xl font-bold">Day {day.number} - {formatDate(day.date)}</h1>
+                <h1 className="mb-4 text-xl font-bold">
+                    Day {day.number} - {formatDate(day.date)}
+                </h1>
 
                 <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1">
-                    <Link
+                    <TabLink
                         href={`/project/${project.id}/day/${day.number}?tab=overview`}
-                        className={`underline ${
-                            tab === 'overview' ? 'font-medium text-foreground' : 'text-blue-600 dark:text-blue-400'
-                        }`}
+                        active={tab === 'overview'}
                     >
                         Overview
-                    </Link>
+                    </TabLink>
 
                     {hasTravel && (
-                        <Link
+                        <TabLink
                             href={`/project/${project.id}/day/${day.number}?tab=travel`}
-                            className={`underline ${
-                                tab === 'travel' ? 'font-medium text-foreground' : 'text-blue-600 dark:text-blue-400'
-                            }`}
+                            active={tab === 'travel'}
                         >
                             Travel
-                        </Link>
+                        </TabLink>
                     )}
 
                     {activities.map((activity, i) => (
-                        <Link
+                        <TabLink
                             key={i}
                             href={`/project/${project.id}/day/${day.number}?tab=activity-${i}`}
-                            className={`capitalize underline ${
-                                tab === `activity-${i}`
-                                    ? 'font-medium text-foreground'
-                                    : 'text-blue-600 dark:text-blue-400'
-                            }`}
+                            active={tab === `activity-${i}`}
                         >
-                            {activity.type}
-                        </Link>
+                            <span className="capitalize">{activity.type}</span>
+                        </TabLink>
                     ))}
                 </div>
 
-                <div className="space-y-4">
-                    {tab === 'overview' && (
-                        <div>
-                            <p className="text-muted-foreground">Select a tab above to view details.</p>
-                        </div>
-                    )}
+                <div className="space-y-6">
+                    {tab === 'overview' && <OverviewTab />}
 
                     {tab === 'travel' && hasTravel && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-bold">Travel</h2>
-                                <RegenerateButton
-                                    projectId={project.id}
-                                    type="single"
-                                    itemType="travel"
-                                    itemId={travel.id}
-                                >
-                                    Regenerate
-                                </RegenerateButton>
-                            </div>
-
-                            <LlmMetadata llmCall={travel.llm_call} />
-
-                            <p>
-                                {travel.start_city.name}, {travel.start_city.state.name} to {travel.end_city.name},{' '}
-                                {travel.end_city.state.name}
-                            </p>
-
-                            {travel.llm_call?.response && <Markdown content={travel.llm_call.response} />}
-                        </div>
+                        <TravelTab
+                            project={project}
+                            day={day}
+                            travel={travel as Travel}
+                            promptData={travelPromptData}
+                        />
                     )}
 
                     {tab.startsWith('activity-') && (
-                        <>
-                            {(() => {
-                                const index = parseInt(tab.replace('activity-', ''), 10);
-                                const activity = activities[index];
-
-                                if (!activity) {
-                                    return <p className="text-muted-foreground">Activity not found.</p>;
-                                }
-
-                                return (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <h2 className="text-lg font-bold capitalize">
-                                                {activity.type}
-                                                {activity.city && ` in ${activity.city.name}`}
-                                            </h2>
-                                            <RegenerateButton
-                                                projectId={project.id}
-                                                type="single"
-                                                itemType="activity"
-                                                itemId={activity.id}
-                                            >
-                                                Regenerate
-                                            </RegenerateButton>
-                                        </div>
-
-                                        <LlmMetadata llmCall={activity.llm_call} />
-
-                                        {activity.llm_call?.response && (
-                                            <Markdown content={activity.llm_call.response} />
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </>
+                        <ActivityTab
+                            project={project}
+                            day={day}
+                            tab={tab}
+                            activities={activities}
+                            activityPromptData={activityPromptData}
+                        />
                     )}
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+function TabLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+    return (
+        <Link
+            href={href}
+            className={`underline ${active ? 'font-medium text-foreground' : 'text-blue-600 dark:text-blue-400'}`}
+        >
+            {children}
+        </Link>
+    );
+}
+
+function OverviewTab() {
+    return (
+        <div>
+            <p className="text-muted-foreground">Select a tab above to view details.</p>
+        </div>
+    );
+}
+
+function TravelTab({
+    project,
+    day,
+    travel,
+    promptData,
+}: {
+    project: Project;
+    day: Day;
+    travel: Travel;
+    promptData: PromptData | null;
+}) {
+    const subtitle = `${travel.start_city.name}, ${travel.start_city.state.name} to ${travel.end_city.name}, ${travel.end_city.state.name}`;
+
+    return (
+        <>
+            <ResultsCard title="Travel" subtitle={subtitle} response={travel.llm_call?.response} />
+
+            {promptData && (
+                <>
+                    <PromptDetailsCard promptData={promptData} llmCall={travel.llm_call} />
+
+                    <GenerateCard
+                        projectId={project.id}
+                        dayId={day.id}
+                        dayNumber={day.number}
+                        type="travel"
+                        modelId={travel.id}
+                        promptData={promptData}
+                    />
+                </>
+            )}
+        </>
+    );
+}
+
+function ActivityTab({
+    project,
+    day,
+    tab,
+    activities,
+    activityPromptData,
+}: {
+    project: Project;
+    day: Day;
+    tab: string;
+    activities: Activity[];
+    activityPromptData: Record<number, PromptData>;
+}) {
+    const index = parseInt(tab.replace('activity-', ''), 10);
+    const activity = activities[index];
+
+    if (!activity) {
+        return <p className="text-muted-foreground">Activity not found.</p>;
+    }
+
+    const title = activity.city ? `${activity.type} in ${activity.city.name}` : activity.type;
+    const promptData = activityPromptData[activity.id];
+
+    return (
+        <>
+            <ResultsCard title={<span className="capitalize">{title}</span>} response={activity.llm_call?.response} />
+
+            {promptData && (
+                <>
+                    <PromptDetailsCard promptData={promptData} llmCall={activity.llm_call} />
+
+                    <GenerateCard
+                        projectId={project.id}
+                        dayId={day.id}
+                        dayNumber={day.number}
+                        type="activity"
+                        modelId={activity.id}
+                        promptData={promptData}
+                    />
+                </>
+            )}
+        </>
     );
 }

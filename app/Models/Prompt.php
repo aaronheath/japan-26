@@ -51,4 +51,28 @@ class Prompt extends Model
     {
         return $this->hasMany(self::class, 'system_prompt_id');
     }
+
+    /**
+     * @return BelongsTo<Day, $this>
+     */
+    public function day(): BelongsTo
+    {
+        return $this->belongsTo(Day::class);
+    }
+
+    /**
+     * @return BelongsTo<self, $this>
+     */
+    public function parentPrompt(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_prompt_id');
+    }
+
+    /**
+     * @return HasMany<self, $this>
+     */
+    public function supplementaryPrompts(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_prompt_id');
+    }
 }

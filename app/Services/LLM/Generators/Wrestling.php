@@ -5,20 +5,20 @@ namespace App\Services\LLM\Generators;
 use App\Models\City;
 use App\Models\DayActivity;
 
-class CitySightseeing extends BaseLlmGenerator
+class Wrestling extends BaseLlmGenerator
 {
     protected DayActivity $activity;
 
     protected City $city;
 
-    public function activity(DayActivity $activity)
+    public function activity(DayActivity $activity): static
     {
         $this->activity = $activity;
 
         return $this;
     }
 
-    public function city(City $city)
+    public function city(City $city): static
     {
         $this->city = $city;
 
@@ -27,7 +27,6 @@ class CitySightseeing extends BaseLlmGenerator
 
     protected function syncToModels(): array
     {
-        // If a city is explicitly set, sync only that
         if (isset($this->city)) {
             return [$this->city];
         }
@@ -37,10 +36,10 @@ class CitySightseeing extends BaseLlmGenerator
 
     protected function promptSlug(): string
     {
-        return 'city-sightseeing';
+        return 'wrestling';
     }
 
-    protected function promptArgs()
+    protected function promptArgs(): array
     {
         if (isset($this->city)) {
             return [

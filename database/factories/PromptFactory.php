@@ -38,4 +38,11 @@ class PromptFactory extends Factory
             'type' => PromptType::Task,
         ]);
     }
+
+    public function supplementary(): static
+    {
+        return $this->state(fn () => [
+            'type' => PromptType::Supplementary,
+        ]);
+    }
 }

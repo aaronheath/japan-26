@@ -5,9 +5,11 @@ namespace App\Jobs;
 use App\Models\DayActivity;
 use App\Models\DayTravel;
 use App\Services\LLM\Generators\BaseLlmGenerator;
-use App\Services\LLM\Generators\CitySightseeing;
+use App\Services\LLM\Generators\Eating;
+use App\Services\LLM\Generators\Sightseeing;
 use App\Services\LLM\Generators\TravelDomestic;
 use App\Services\LLM\Generators\TravelInternational;
+use App\Services\LLM\Generators\Wrestling;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -60,18 +62,24 @@ class RegenerateLlmContent implements ShouldQueue
 
     protected function createTravelGenerator(DayTravel $travel): BaseLlmGenerator
     {
-        return match ($this->generatorClass) {
+        $generator = match ($this->generatorClass) {
             TravelDomestic::class => TravelDomestic::make()->travel($travel),
             TravelInternational::class => TravelInternational::make()->travel($travel),
             default => throw new InvalidArgumentException("Unsupported generator class: {$this->generatorClass}"),
         };
+
+        return $generator->forDay($travel->day);
     }
 
     protected function createActivityGenerator(DayActivity $activity): BaseLlmGenerator
     {
-        return match ($this->generatorClass) {
-            CitySightseeing::class => CitySightseeing::make()->activity($activity),
+        $generator = match ($this->generatorClass) {
+            Sightseeing::class => Sightseeing::make()->activity($activity),
+            Wrestling::class => Wrestling::make()->activity($activity),
+            Eating::class => Eating::make()->activity($activity),
             default => throw new InvalidArgumentException("Unsupported generator class: {$this->generatorClass}"),
         };
+
+        return $generator->forDay($activity->day);
     }
 }

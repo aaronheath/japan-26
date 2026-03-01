@@ -64,11 +64,25 @@ class PromptSeeder extends Seeder
                 'content' => $this->travelAgentSystemContent(),
             ],
             [
-                'name' => 'City Sightseeing',
-                'slug' => 'city-sightseeing',
+                'name' => 'Sightseeing',
+                'slug' => 'sightseeing',
                 'description' => 'Task prompt for generating city sightseeing attraction recommendations. Variables: $city (City model), $date (optional date string).',
                 'type' => PromptType::Task,
-                'content' => $this->citySightseeingContent(),
+                'content' => $this->sightseeingContent(),
+            ],
+            [
+                'name' => 'Wrestling',
+                'slug' => 'wrestling',
+                'description' => 'Task prompt for generating wrestling event and venue recommendations. Variables: $city (City model), $date (optional date string).',
+                'type' => PromptType::Task,
+                'content' => $this->wrestlingContent(),
+            ],
+            [
+                'name' => 'Eating',
+                'slug' => 'eating',
+                'description' => 'Task prompt for generating restaurant and dining recommendations. Variables: $city (City model), $date (optional date string).',
+                'type' => PromptType::Task,
+                'content' => $this->eatingContent(),
             ],
             [
                 'name' => 'Travel Domestic Japan',
@@ -108,7 +122,7 @@ There is no need to document the clients preferences or interests in your respon
 BLADE;
     }
 
-    protected function citySightseeingContent(): string
+    protected function sightseeingContent(): string
     {
         return <<<'BLADE'
 You are to provide a list of the top sightseeing attractions in {{ $city->name }}, {{ $city->state->name }}, {{ $city->state->country->name }}.
@@ -146,6 +160,97 @@ Each row sequentially shall contain the following information:
 - Name: Getting There, Information: Best transportation options to reach the attraction. Consider near by public transportation links. Remember that trains are preferable.
 
 Group the list by the type of attraction, such as Historical Sites, Museums, Parks, Cultural Experiences, etc. Use appropriate headings for each group.
+BLADE;
+    }
+
+    protected function wrestlingContent(): string
+    {
+        return <<<'BLADE'
+You are to provide detailed information about professional wrestling events and venues in {{ $city->name }}, {{ $city->state->name }}, {{ $city->state->country->name }}.
+
+@if($date)
+    The visit is expected to take place around {{ $date }}.
+@endif
+
+Focus primarily on NJPW (New Japan Pro-Wrestling) events, but also include other major Japanese wrestling promotions such as AJPW, NOAH, DDT, Stardom, and other notable promotions that may have events in the area.
+
+Please provide:
+
+### Venues
+
+For each wrestling venue in or near the city, provide the following in a table format with "Detail" and "Information" columns:
+- Name: Location, Information: Full address
+- Name: Coordinates, Information: Latitude and Longitude with a Google Maps link (opening in a new tab)
+- Name: Capacity, Information: Venue capacity
+- Name: Description, Information: Brief description of the venue and its significance to wrestling (2-3 sentences)
+- Name: Getting There, Information: Best transportation options, especially trains
+
+### Upcoming Events
+
+If there are any known events scheduled around the specified date, list them with:
+- Promotion name
+- Event name
+- Date and time
+- Venue
+- Expected card highlights (if known)
+
+### Ticket Information
+
+Provide guidance on:
+- How to purchase tickets (official websites, convenience store ticket machines like Loppi or e-plus)
+- Typical price ranges for different seating categories
+- Whether advance booking is recommended
+- Tips for foreign visitors purchasing tickets
+
+### Wrestling Shops and Memorabilia
+
+List any wrestling merchandise shops, themed restaurants, or wrestling-related attractions in the area with location details and opening hours.
+BLADE;
+    }
+
+    protected function eatingContent(): string
+    {
+        return <<<'BLADE'
+You are to provide restaurant and dining recommendations in {{ $city->name }}, {{ $city->state->name }}, {{ $city->state->country->name }}.
+
+@if($date)
+    The dining is expected to take place around {{ $date }}.
+@endif
+
+Provide a comprehensive guide to the local food scene, including a mix of:
+- Must-try local specialities and regional dishes
+- Highly rated restaurants across different price ranges (budget, mid-range, upscale)
+- Street food and market recommendations
+- Late-night dining options (izakaya, ramen shops, yakitori)
+- Breakfast and lunch spots
+
+For each restaurant or dining recommendation, present in the following format:
+
+A heading with the name of the establishment.
+
+Followed by a table with two columns. The first column is titled "Detail" and the second column is titled "Information".
+
+Each row sequentially shall contain the following information:
+- Name: Cuisine, Information: Type of cuisine or speciality
+- Name: Location, Information: Address and neighborhood
+- Name: Coordinates, Information: Latitude and Longitude with a Google Maps link (opening in a new tab)
+- Name: Price Range, Information: Approximate cost per person in AUD
+- Name: Description, Information: Brief description of the restaurant and what makes it special (2-3 sentences)
+- Name: Must-Try Dishes, Information: Recommended dishes to order
+- Name: Hours, Information: Opening hours and best times to visit
+- Name: Reservations, Information: Whether reservations are needed and how to make them
+- Name: Tips, Information: Ordering tips, dietary accommodation, English menu availability
+- Name: Getting There, Information: Best transportation options, especially trains
+
+Provide at least 15 recommendations (up to 25), grouped by category such as:
+- Regional Specialities
+- Izakaya and Drinking Spots
+- Ramen and Noodles
+- Sushi and Seafood
+- Street Food and Markets
+- Upscale Dining
+
+Include information about any food allergies or dietary considerations that may be relevant for foreign visitors.
 BLADE;
     }
 
